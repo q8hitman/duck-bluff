@@ -1,0 +1,6 @@
+/.superpowers/
+/node_modules/
+__pycache__/
+/assets/ref/
+/docs/
+/.claude/

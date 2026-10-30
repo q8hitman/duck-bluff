@@ -1,0 +1,14 @@
+{
+  "name": "BSC Ducks",
+  "short_name": "BSC Ducks",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#24160c",
+  "theme_color": "#24160c",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    { "src": "assets/ui/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/ui/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

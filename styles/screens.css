@@ -1,0 +1,115 @@
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: calc(100dvh - 28px);
+  text-align: center;
+}
+
+.menu-fan { position: relative; width: min(92vw, 400px); height: min(50vw, 190px); margin-bottom: 6px; }
+.fan-slot {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 27%;
+  transform: translateX(calc(-50% + var(--n) * 68%)) translateY(calc((var(--n) * var(--n)) * 6%)) rotate(calc(var(--n) * 7deg));
+  z-index: calc(3 - var(--n) * var(--n));
+}
+.fan-card { position: relative; aspect-ratio: 5 / 7; }
+.menu h1 { font-size: clamp(24px, 6.5vw, 38px); text-shadow: 0 2px 8px #000; }
+.menu p { margin: 0 0 8px; color: #f3e6c8; font-size: 14px; text-shadow: 0 1px 4px #000; }
+.menu-buttons { display: flex; flex-direction: column; gap: 9px; width: min(100%, 320px); }
+.menu-buttons .btn.primary { min-height: 56px; font-size: 20px; }
+
+.page-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.page-top h2 { flex: 1; font-size: 22px; text-shadow: 0 2px 6px #000; }
+
+.chapter-list { display: grid; gap: 10px; }
+
+.chapter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  color: var(--ink);
+  text-align: start;
+  transition: transform var(--press) ease-out;
+}
+
+.chapter:hover:not([disabled]) { transform: scale(1.015); }
+.chapter:active:not([disabled]) { transform: scale(.985); }
+.chapter[disabled] { opacity: .55; cursor: default; }
+.chapter .num { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--green); color: #fdf8ea; font-weight: 700; line-height: 34px; text-align: center; }
+.chapter strong { flex: 1; }
+
+.album-group { margin-bottom: 18px; }
+.album-group h3 { margin-bottom: 8px; font-size: 16px; color: #fbf1d8; text-shadow: 0 1px 4px #000; }
+.album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+
+.album-card {
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  color: var(--ink);
+  text-align: center;
+  padding: 0;
+  font-size: 12px;
+  transition: transform var(--press) ease-out;
+}
+
+.album-card:active { transform: scale(.97); }
+.album-card img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: top; }
+.album-card span { display: block; padding: 4px; font-weight: 600; }
+.album-card.locked img { filter: brightness(0) opacity(.28); }
+
+.intro-list { display: grid; gap: 10px; margin-bottom: 16px; }
+
+.intro-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border-radius: var(--radius);
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  color: var(--ink);
+  animation: deal 320ms ease-out both;
+  animation-delay: calc(var(--i) * 70ms);
+}
+
+.intro-item img { flex: none; width: 64px; height: 80px; border-radius: 8px; object-fit: cover; object-position: top; }
+.intro-item p { margin: 2px 0 0; font-size: 14px; color: var(--ink-soft); }
+
+.setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border-radius: var(--radius);
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  color: var(--ink);
+}
+
+.segmented { display: flex; gap: 6px; flex-wrap: wrap; }
+.segmented .btn { min-height: 38px; padding: 6px 12px; font-size: 14px; }
+.segmented .btn.on { background: var(--green); border-color: var(--green); color: #fdf8ea; }
+
+.result { text-align: center; }
+.result h2 { font-size: 24px; margin-bottom: 6px; }
+.result-duck { width: 110px; height: 130px; object-fit: cover; object-position: top; border-radius: 14px; border: 3px solid #c9a24a; margin-bottom: 8px; }
+.result-score { margin: 0 0 6px !important; font-size: 18px; font-weight: 800; color: #4f6b4c !important; }
+.result-feathers { font-size: 26px; margin-bottom: 10px; }
+.result-feathers .gone { opacity: .18; filter: grayscale(1); }
+.result p { margin: 0 0 12px; color: var(--ink-soft); }
+.result .sheet-actions { justify-content: center; }
