@@ -44,6 +44,46 @@ function fit(n, w, { aspect, maxRx, maxRy, centerW, centerH }) {
   return points;
 }
 
+const hits = (a, b) => Math.max(0, Math.min(a.r, b.r) - Math.max(a.l, b.l)) * Math.max(0, Math.min(a.b, b.b) - Math.max(a.t, b.t));
+
+function bubbleRect(card, side, { w, h }, { gap, above }) {
+  const mid = (card.l + card.r) / 2;
+  if (side === 'top') return { l: mid - w / 2, r: mid + w / 2, t: card.b + gap, b: card.b + gap + h };
+  if (side === 'bottom') return { l: mid - w / 2, r: mid + w / 2, t: card.t - above - h, b: card.t - above };
+  const t = card.t + (card.b - card.t) * 0.18;
+  if (side === 'right') return { l: card.r + gap, r: card.r + gap + w, t, b: t + h };
+  return { l: card.l - gap - w, r: card.l - gap, t, b: t + h };
+}
+
+// Picks where each speech bubble goes, keeping it off the cards, their numbers, the
+// other bubbles and anything in `blocks`. All values are pixels inside the table.
+// Sides name the seat class: 'top' seats speak downward, 'bottom' seats upward.
+// `first` is the duck in focus: it chooses first and always gets a bubble. The rest
+// report clear: false when no side is free, and those lines wait for a tap.
+export function placeBubbles({ cards, sizes, preferred, blocks, width, height, first = null, gap = 9, above = 20 }) {
+  const solid = [...cards.map(c => ({ ...c, t: c.t - (above - gap) })), ...blocks];
+  const placed = [];
+  const result = cards.map((_, i) => ({ side: preferred[i], clear: true }));
+  const turns = cards.map((_, i) => i).filter(i => i !== first);
+  if (first !== null) turns.unshift(first);
+  for (const i of turns) {
+    if (!sizes[i]) continue;
+    const card = cards[i];
+    const order = [preferred[i], ...['top', 'bottom', 'right', 'left'].filter(s => s !== preferred[i])];
+    let best = null;
+    for (const side of order) {
+      const rect = bubbleRect(card, side, sizes[i], { gap, above });
+      const offTable = sizes[i].w * sizes[i].h - hits(rect, { l: 0, r: width, t: 0, b: height });
+      const score = offTable + [...solid, ...placed].reduce((sum, o) => sum + hits(rect, o), 0);
+      if (!best || score < best.score) best = { side, rect, score };
+    }
+    const clear = best.score === 0;
+    if (clear || i === first) placed.push(best.rect);
+    result[i] = { side: best.side, clear };
+  }
+  return result;
+}
+
 // All sizes are fractions of the table width; aspect is table height / width.
 // Returned x and y are fractions of the table's width and height.
 export function ringLayout({ n, aspect, maxCard, maxRx, maxRy, centerW, centerH }) {

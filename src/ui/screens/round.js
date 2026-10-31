@@ -4,7 +4,7 @@ import { sounds } from '../sound.js';
 import { setTension, duckMusic } from '../music.js';
 import * as fx from '../fx.js';
 import { createCardView } from '../card-view.js';
-import { ringLayout } from '../ring.js';
+import { ringLayout, placeBubbles } from '../ring.js';
 import { boardLabel } from '../../core/board.js';
 import { referredCards } from '../../core/refs.js';
 import { getCard, impostorArt } from '../../core/cards.js';
@@ -40,6 +40,7 @@ export function roundScreen(root, app) {
   const views = shown.map((id, i) => createCardView(i, id, onCardTap));
 
   const seats = [];
+  const restSides = [];
   const caughtEl = h('div', { class: 'table-caught', role: 'img' });
   const centerLine = h('div', { class: 'center-line' });
   const bubbles = [];
@@ -73,10 +74,48 @@ export function roundScreen(root, app) {
       const ny = (p.y - 0.5) / reach;
       // ducks at the top and bottom speak toward the middle, where there is room
       const side = ny < -0.7 ? 'top' : ny > 0.7 ? 'bottom' : p.x > 0.5 ? 'right' : 'left';
-      seats[i].className = `seat ${side}`;
+      restSides[i] = side;
       seats[i].style.cssText = `left:${(p.x * 100).toFixed(2)}%;top:${(p.y * 100).toFixed(2)}%;width:${(card * 100).toFixed(2)}%`;
     });
+    (phone ? tableEl.querySelector('.center-note') : tableEl).append(detailsBtn);
     renderFocus();
+  }
+
+  // Each bubble takes the first side that is clear of everything else on the table.
+  function arrangeBubbles() {
+    const phone = innerWidth < 900;
+    const box = tableEl.getBoundingClientRect();
+    const inTable = el => {
+      const r = el.getBoundingClientRect();
+      return { l: r.left - box.left, r: r.right - box.left, t: r.top - box.top, b: r.bottom - box.top };
+    };
+    const setSide = (i, side) => {
+      seats[i].classList.remove('top', 'bottom', 'left', 'right');
+      seats[i].classList.add(side);
+    };
+    if (phone) return restSides.forEach((side, i) => setSide(i, side));
+    const dish = inTable(tableEl.querySelector('.dish'));
+    const number = Math.max(26, parseFloat(tableEl.style.getPropertyValue('--cw')) * 0.28);
+    const active = hover ?? focus;
+    const places = placeBubbles({
+      cards: seats.map(inTable),
+      sizes: bubbles.map(b => (b.hidden ? null : { w: b.offsetWidth, h: b.offsetHeight })),
+      preferred: restSides,
+      blocks: [
+        { ...dish, b: dish.b + 34 }, // the hint under the dish
+        inTable(aimButton),
+        { l: 0, r: 150, t: box.height - 54, b: box.height }, // the details button's corner
+      ],
+      width: box.width,
+      height: box.height,
+      first: active ? active.i : null,
+      above: number * 0.42 + 8,
+    });
+    places.forEach(({ side, clear }, i) => {
+      setSide(i, side);
+      bubbles[i].classList.toggle('crowded', !clear && active?.i !== i);
+      bubbles[i].classList.toggle('active', active?.i === i);
+    });
   }
 
   const typeCounts = {};
@@ -244,6 +283,7 @@ export function roundScreen(root, app) {
       ? `${boardLabel(shownFocus.i)}. ${shownFocus.ability ? statementText(shownFocus.statement, null, { self: shownFocus.i, layout }) : lineOf(shownFocus.i)}`
       : t(state.flipped.every(Boolean) ? 'tipExpel' : 'tapToFlip');
     detailsBtn.hidden = !shownFocus || state.expelled[shownFocus.i];
+    arrangeBubbles();
   }
 
   const isRisky = i => state.truth.cards[i].realId === 'volatile';

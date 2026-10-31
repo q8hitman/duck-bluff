@@ -482,11 +482,14 @@ body.aiming .world-red { opacity: .9; }
   .seat.left .bubble::after { right: -6px; top: 10px; transform: rotate(-45deg); }
   .seat.top .bubble { left: calc(50% - 64px); top: 100%; margin-top: 9px; }
   .seat.top .bubble::after { left: calc(50% - 5px); top: -6px; transform: rotate(-135deg); }
-  .seat.bottom .bubble { left: calc(50% - 64px); bottom: 100%; margin-bottom: 9px; }
+  .seat.bottom .bubble { left: calc(50% - 64px); bottom: 100%; margin-bottom: calc(max(26px, calc(var(--cw) * 0.28)) * 0.42 + 8px); }
   .seat.bottom .bubble::after { left: calc(50% - 5px); bottom: -6px; transform: rotate(45deg); }
   .table { margin-bottom: 0; }
   .aim-fab { right: 1%; bottom: 2%; width: 96px; height: 96px; font-size: 17px; }
   .aim-icon { font-size: 26px; }
+  .bubble.crowded { visibility: hidden; }
+  .bubble.active { z-index: 5; }
+  .table > .details-btn { position: absolute; left: 1%; bottom: 2%; margin: 0; z-index: 5; }
   .sheet-back { align-items: center; }
   .sheet { border-radius: 18px; }
 }

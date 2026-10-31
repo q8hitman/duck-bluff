@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ringLayout, CARD_RATIO } from '../src/ui/ring.js';
+import { ringLayout, placeBubbles, CARD_RATIO } from '../src/ui/ring.js';
 
 const PHONE = { aspect: 4.6 / 3, maxCard: 0.28, maxRx: 0.46, maxRy: 0.7, centerW: 0.42, centerH: 0.55 };
 const DESKTOP = { aspect: 9 / 16, maxCard: 0.125, maxRx: 0.33, maxRy: 0.4, centerW: 0.19, centerH: 0.3 };
@@ -47,4 +47,32 @@ test('spacing between neighbours is even', () => {
     return Math.hypot(p.x - q.x, (p.y - q.y) * a);
   });
   assert.ok(Math.max(...gaps) / Math.min(...gaps) < 1.15, gaps.join());
+});
+
+test('a bubble moves off whatever blocks its usual side', () => {
+  const card = { l: 450, r: 550, t: 400, b: 540 };
+  const shared = { cards: [card], sizes: [{ w: 128, h: 50 }], preferred: ['bottom'], width: 1000, height: 600 };
+  assert.equal(placeBubbles({ ...shared, blocks: [] })[0].side, 'bottom');
+  const dish = { l: 400, r: 600, t: 200, b: 380 };
+  assert.notEqual(placeBubbles({ ...shared, blocks: [dish] })[0].side, 'bottom');
+});
+
+test('bubbles avoid each other and hidden ones stay out of the way', () => {
+  const a = { l: 100, r: 200, t: 100, b: 240 };
+  const b = { l: 100, r: 200, t: 320, b: 460 };
+  const size = { w: 128, h: 60 };
+  const base = { cards: [a, b], preferred: ['top', 'bottom'], blocks: [], width: 1000, height: 600 };
+  const both = placeBubbles({ ...base, sizes: [size, size] });
+  assert.equal(both[0].side, 'top');
+  assert.notEqual(both[1].side, 'bottom');
+  assert.equal(placeBubbles({ ...base, sizes: [null, size] })[1].side, 'bottom');
+});
+
+test('with no free side a bubble waits, unless its duck is in focus', () => {
+  const card = { l: 10, r: 110, t: 10, b: 150 };
+  const wall = { l: 0, r: 1000, t: 0, b: 600 };
+  const size = { w: 128, h: 50 };
+  assert.equal(placeBubbles({ cards: [card], sizes: [size], preferred: ['top'], blocks: [wall], width: 1000, height: 600 })[0].clear, false);
+  const other = { ...card, l: 300, r: 400 };
+  assert.equal(placeBubbles({ cards: [card, other], sizes: [size, size], preferred: ['top', 'top'], blocks: [], width: 1000, height: 600, first: 1 })[1].clear, true);
 });

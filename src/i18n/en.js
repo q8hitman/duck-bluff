@@ -6,7 +6,7 @@ export default {
     ali: { name: 'Ali', ability: 'Whisper: pick 3 cards to learn if any is an impostor' },
     shouq: { name: 'Shouq', ability: 'Lens: pick a card to learn if it is scrambled' },
     rawan: { name: 'Rawan', ability: 'Guard: pick a card to learn if a saboteur sits next to it' },
-    loujain: { name: 'Loujain', ability: 'Lineage: pick 2 cards to learn if they are on the same team' },
+    loujain: { name: 'Loujain', ability: 'Lineage: pick 2 cards to learn if they are alike or one of each' },
     ruaa: { name: 'Ruaa', ability: 'Test: pick a card to learn if it is who it claims' },
     zahraa: { name: 'Dr. Zahraa', ability: 'Watch: pick a card to learn how many impostors sit next to it' },
     fayzah: { name: 'Fayzah', ability: 'Radar: pick a card to learn how far the nearest impostor is' },
