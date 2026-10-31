@@ -61,21 +61,25 @@ function bubbleRect(card, side, { w, h }, { gap, above }) {
 // Each result says clear: false when no side was free.
 export function placeBubbles({ cards, sizes, preferred, blocks, width, height, gap = 9, above = 20 }) {
   const solid = [...cards.map(c => ({ ...c, t: c.t - (above - gap) })), ...blocks];
-  const placed = [];
+  const placed = cards.map(() => null);
   const result = cards.map((_, i) => ({ side: preferred[i], clear: true }));
-  for (const [i, card] of cards.entries()) {
-    if (!sizes[i]) continue;
-    const order = [preferred[i], ...['top', 'bottom', 'right', 'left'].filter(s => s !== preferred[i])];
-    let best = null;
-    for (const side of order) {
-      const rect = bubbleRect(card, side, sizes[i], { gap, above });
-      const roomy = { l: rect.l - 4, r: rect.r + 4, t: rect.t - 4, b: rect.b + 4 }; // leaves air around it
-      const offTable = sizes[i].w * sizes[i].h - hits(rect, { l: 0, r: width, t: 0, b: height });
-      const score = offTable + [...solid, ...placed].reduce((sum, o) => sum + hits(roomy, o), 0);
-      if (!best || score < best.score) best = { side, rect, score };
+  // Later rounds move a bubble again now that it can see the ones placed after it.
+  for (let round = 0; round < 4; round++) {
+    for (const [i, card] of cards.entries()) {
+      if (!sizes[i]) continue;
+      const order = [result[i].side, ...['top', 'bottom', 'right', 'left'].filter(s => s !== result[i].side)];
+      const others = placed.filter((rect, j) => rect && j !== i);
+      let best = null;
+      for (const side of order) {
+        const rect = bubbleRect(card, side, sizes[i], { gap, above });
+        const roomy = { l: rect.l - 4, r: rect.r + 4, t: rect.t - 4, b: rect.b + 4 }; // leaves air around it
+        const offTable = sizes[i].w * sizes[i].h - hits(rect, { l: 0, r: width, t: 0, b: height });
+        const score = offTable + [...solid, ...others].reduce((sum, o) => sum + hits(roomy, o), 0);
+        if (!best || score < best.score) best = { side, rect, score };
+      }
+      placed[i] = best.rect;
+      result[i] = { side: best.side, clear: best.score === 0, score: best.score };
     }
-    placed.push(best.rect);
-    result[i] = { side: best.side, clear: best.score === 0 };
   }
   return result;
 }

@@ -1,0 +1,75 @@
+/* The club's own look: chunky lab-poster titles over readable text, and everything drawn
+   like the ducks themselves, with a thick dark outline and a hard shadow. */
+@font-face { font-family: 'Lalezar'; font-display: swap; src: url('../assets/fonts/lalezar-arabic.woff2') format('woff2'); unicode-range: U+0600-06FF, U+0750-077F, U+200C-200E, U+FB50-FDFF, U+FE70-FEFF; }
+@font-face { font-family: 'Lalezar'; font-display: swap; src: url('../assets/fonts/lalezar-latin.woff2') format('woff2'); unicode-range: U+0000-00FF, U+2010-2027; }
+
+:root {
+  --display: 'Lalezar', 'Baloo', 'Segoe UI', Tahoma, sans-serif;
+  --outline: #17100a;
+  --gold: #e9c46a;
+  font-synthesis: none;
+}
+
+h1, h2, h3, .btn, .chip, .card-name, .log-who, .log-title, .round-title strong, .aim-fab, .sheet-line, .center-line, .pick-bar .grow, .toast, .react {
+  font-family: var(--display);
+  font-weight: 400;
+  letter-spacing: .1px;
+}
+strong { font-weight: 800; }
+.round-title strong { font-size: 19px; line-height: 1.15; }
+h1 { letter-spacing: .3px; }
+
+.btn {
+  border: 2.5px solid var(--outline);
+  border-radius: 13px;
+  font-size: 17px;
+  box-shadow: 0 4px 0 var(--outline);
+  transition: transform var(--press) ease-out, box-shadow var(--press) ease-out, background-color var(--press) ease-out;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 5px 0 var(--outline); }
+.btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--outline); }
+.btn.small { font-size: 15px; box-shadow: 0 3px 0 var(--outline); }
+.btn.primary { border-color: var(--outline); box-shadow: 0 4px 0 var(--outline); }
+.btn.danger { border-color: var(--outline); box-shadow: 0 4px 0 var(--outline); }
+.btn[disabled] { box-shadow: 0 2px 0 var(--outline); }
+
+.chip { border: 2px solid var(--outline); background: var(--gold); font-size: 14px; padding: 1px 10px 2px; }
+.round-top { border: 2.5px solid var(--outline); background: rgba(30, 18, 9, .93); box-shadow: 0 4px 0 var(--outline); }
+
+.bubble:not([hidden]) {
+  border: 2.5px solid var(--outline);
+  border-radius: 12px;
+  box-shadow: 2px 3px 0 var(--outline);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.25;
+}
+.bubble::after { border-color: var(--outline); }
+
+.log-title { font-size: 19px; }
+.log-item {
+  border: 2px solid var(--outline);
+  box-shadow: 2px 2px 0 var(--outline);
+  font-size: 14.5px;
+}
+.log-item.ability { border-color: var(--outline); }
+.log-who { font-size: 15.5px; }
+.log-thumb img { border-color: var(--outline); }
+
+.sheet, .duck-panel { border: 3px solid var(--outline); box-shadow: 5px 6px 0 var(--outline); }
+.sheet { background: var(--card); }
+.sheet-head img { border-color: var(--outline); }
+.sheet-line { font-size: 17px; }
+.sheet-line small { font-family: 'Baloo', sans-serif; }
+.sheet-ability { border: 2px solid var(--outline); }
+.duck-panel .sheet-line { font-size: 15px; }
+.duck-panel h3 { font-size: 19px; }
+.panel-close { font-family: 'Baloo', sans-serif; }
+
+.center-line { border: 2px solid var(--outline); background: rgba(30, 18, 9, .93); font-size: 14.5px; }
+.aim-fab { border: 3px solid var(--outline); outline: 2.5px solid var(--gold); outline-offset: -6px; box-shadow: 0 5px 0 var(--outline); font-size: 18px; }
+.toast { border: 2.5px solid var(--outline); box-shadow: 0 4px 0 var(--outline); font-size: 16px; }
+.pick-bar { border: 2.5px solid var(--outline); box-shadow: 0 4px 0 var(--outline); }
+.card-info { border: 2px solid var(--outline); background: var(--gold); color: var(--outline); }
+.card-info:hover { background: #fff0b8; }
+.card-num { border-color: var(--gold); }

@@ -15,9 +15,12 @@ import { t, getLang, factText, factCount, cardText, cardDesc, impostorText, stat
 
 const PEEK_DELAY = 350; // long enough that sweeping across the table opens nothing
 const PEEK_LINGER = 220; // time to reach the panel from the card
+const RAIL_FROM = 1280; // matches the side rail in board.css
+const SMALLEST_WITH_RAIL = 0.085; // of the table's width; smaller and the ducks are hard to see
 
 export function roundScreen(root, app) {
   if (app.save.feathers <= 0) app.save = onRunLost(app.save);
+  document.body.classList.add('at-table');
   const save = app.save;
   const seed = (save.salt ?? 0) + save.nextSeed;
   const generated = generateRound({
@@ -104,16 +107,27 @@ export function roundScreen(root, app) {
       const blocks = [
         middle,
         { l: aim.left - box.left, r: aim.right - box.left, t: aim.top - box.top, b: aim.bottom - box.top },
-        { l: 0, r: 150, t: box.height - 54, b: box.height }, // the details button's corner
       ];
-      for (let maxCard = 0.13; maxCard >= 0.07; maxCard -= 0.005) {
+      const rail = innerWidth >= RAIL_FROM;
+      let fewest = Infinity;
+      for (let maxCard = 0.13; maxCard >= (rail ? SMALLEST_WITH_RAIL : 0.065); maxCard -= 0.005) {
         const layout = layoutFor(maxCard);
         const w = layout.card * box.width;
         const cards = layout.points.map(p => ({ l: p.x * box.width - w / 2, r: p.x * box.width + w / 2, t: p.y * box.height - w * 0.7, b: p.y * box.height + w * 0.7 }));
         const places = placeBubbles({ cards, sizes, preferred: layout.sides, blocks, width: box.width, height: box.height, above: Math.max(26, w * 0.28) * 0.42 + 8 });
-        chosen = { ...layout, sides: places.map(place => place.side) };
-        if (places.every(place => place.clear)) break;
+        // Biggest cards with every line clear; failing that, the least of them in the way.
+        const blocked = places.reduce((sum, place) => sum + (place.score ?? 0), 0);
+        if (blocked < fewest) {
+          fewest = blocked;
+          chosen = { ...layout, sides: places.map(place => place.side) };
+        }
+        if (!blocked) break;
       }
+      // Too crowded to speak all at once: the rail already lists every line, so the cards
+      // keep their size and only the duck you point at speaks on the table.
+      const quiet = rail && fewest > 0;
+      tableEl.classList.toggle('quiet', quiet);
+      if (quiet) chosen = layoutFor(0.13);
     }
     const { card, points, sides } = chosen;
     tableEl.style.setProperty('--cw', `${(card * box.width).toFixed(1)}px`);
@@ -446,8 +460,18 @@ export function roundScreen(root, app) {
   // Phones get a strip along the bottom; a big screen uses the emptiest part of the table.
   function placePanel() {
     const phone = innerWidth < 900;
+    const docked = innerWidth >= RAIL_FROM;
     panel.classList.toggle('phone', phone);
+    panel.classList.toggle('docked', docked);
+    panel.style.width = '';
     if (phone) { panel.style.left = panel.style.top = ''; return; }
+    if (docked) {
+      const rail = root.querySelector('.log-wrap').getBoundingClientRect();
+      panel.style.width = `${rail.width}px`;
+      panel.style.left = `${rail.left}px`;
+      panel.style.top = `${rail.top}px`;
+      return;
+    }
     const rectOf = el => {
       const r = el.getBoundingClientRect();
       return { l: r.left, r: r.right, t: r.top, b: r.bottom };
@@ -622,5 +646,5 @@ export function roundScreen(root, app) {
     setTimeout(() => { if (root.isConnected) document.body.append(resultEl); }, reduced() ? 0 : 1000);
   }
 
-  return () => { removeEventListener('keydown', onKey); tableWatch.disconnect(); removeEventListener('pointerdown', onPointerDown); closePanel(); aimButton.remove(); document.body.classList.remove('aiming'); fx.killAll(root); };
+  return () => { document.body.classList.remove('at-table'); removeEventListener('keydown', onKey); tableWatch.disconnect(); removeEventListener('pointerdown', onPointerDown); closePanel(); aimButton.remove(); document.body.classList.remove('aiming'); fx.killAll(root); };
 }
