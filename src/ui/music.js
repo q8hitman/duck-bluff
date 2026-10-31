@@ -1,10 +1,14 @@
-// Plays our own soundtrack (assets/music), looping with a soft overlap so the seam
-// doesn't show, and crossfading between the menu and the table.
+// Plays our own soundtrack (assets/music): each mood has a playlist that moves to the
+// next track with a soft overlap, and crossfades between the menu and the table.
 import { audio } from './sound.js';
 
-const TRACKS = { menu: 'assets/music/menu.mp3', table: 'assets/music/table.mp3' };
+const music = name => `assets/music/${name}.mp3`;
+const TRACKS = {
+  menu: ['pixel-menu', 'menu'].map(music),
+  table: ['pixel-mystery', 'groove', 'midnight', 'pixel-funk', 'table'].map(music),
+};
 const VOLUME = 0.5;
-const OVERLAP = 3; // seconds the end of a loop overlaps the next start
+const OVERLAP = 3; // seconds the end of a track overlaps the next start
 const FADE = 1.2;
 
 let enabled = true;
@@ -15,12 +19,19 @@ let tension = false;
 let playing = null; // { name, gain, sources, timer }
 let beatTimer = null;
 const buffers = {};
+const turn = { menu: 0, table: 0 };
 
-async function load(name) {
+async function load(url) {
   const ctx = audio();
-  buffers[name] ??= fetch(TRACKS[name]).then(r => r.arrayBuffer()).then(data => ctx.decodeAudioData(data));
-  return buffers[name];
+  buffers[url] ??= fetch(url).then(r => r.arrayBuffer()).then(data => ctx.decodeAudioData(data));
+  return buffers[url];
 }
+
+const nextUrl = name => {
+  const list = TRACKS[name];
+  return list[turn[name]++ % list.length];
+};
+const peekUrl = name => TRACKS[name][turn[name] % TRACKS[name].length];
 
 function ensureGraph(ctx) {
   if (master) return;
@@ -47,7 +58,7 @@ function stopPlaying() {
   }, FADE * 1000 + 300);
 }
 
-function scheduleLoop(track, buffer, at) {
+function scheduleTrack(track, buffer, at) {
   const ctx = audio();
   const source = ctx.createBufferSource();
   const amp = ctx.createGain();
@@ -61,8 +72,11 @@ function scheduleLoop(track, buffer, at) {
   source.start(at);
   track.sources = [...track.sources.slice(-1), source];
   const next = end - OVERLAP;
-  track.timer = setTimeout(() => {
-    if (playing === track) scheduleLoop(track, buffer, next);
+  load(peekUrl(track.name)).catch(() => {}); // ready before it's needed
+  track.timer = setTimeout(async () => {
+    if (playing !== track) return;
+    const following = await load(nextUrl(track.name)).catch(() => buffer); // a bad file repeats this one
+    if (playing === track) scheduleTrack(track, following, Math.max(next, ctx.currentTime + 0.05));
   }, Math.max(0, (next - ctx.currentTime - 1) * 1000));
 }
 
@@ -74,7 +88,7 @@ async function playMood() {
   ensureGraph(ctx);
   let buffer;
   try {
-    buffer = await load(name);
+    buffer = await load(nextUrl(name));
   } catch {
     return; // no music rather than a broken game
   }
@@ -85,7 +99,7 @@ async function playMood() {
   gain.connect(master);
   const track = { name, gain, sources: [], timer: null };
   playing = track;
-  scheduleLoop(track, buffer, ctx.currentTime + 0.1);
+  scheduleTrack(track, buffer, ctx.currentTime + 0.1);
 }
 
 // When you are down to your last feather, a quiet heartbeat joins in.
