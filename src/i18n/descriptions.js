@@ -13,6 +13,8 @@ export default {
     fayzah: 'رادار النادي. تقول كم كرت يبعد أقرب متنكر عنها، بأقصر طريق حول الطاولة.',
     motivator: 'يقارن: هل المتنكرين اللي أرقامهم أصغر منه أكثر، ولا اللي أرقامهم أكبر؟',
     ahmad: 'هادي وصبور. يقول إن وحدة على الأقل من بطتين بريئة.',
+    dawoud: 'يفحص العينات بمجهره. يقول إذا فيه متنكر جنبه.',
+    hora: 'تخلط وتقارن. تقول إذا بطتين من نفس الفريق أو لا.',
     ritaj: 'تقول إذا جارتيها صادقتين، أو فيهم وحدة كذابة. الكذابة ممكن تكون متنكرة أو مخربطة.',
 
     lab: 'تقول إذا فيه متنكر جنبها أو لا.',
@@ -68,6 +70,8 @@ export default {
     fayzah: 'The club’s radar. Says how many cards away the nearest impostor is, the short way around the table.',
     motivator: 'Compares impostors numbered below him with those numbered above him.',
     ahmad: 'Calm and patient. Says at least one of two ducks is innocent.',
+    dawoud: 'Checks samples under his microscope. Says whether an impostor sits next to him.',
+    hora: 'Mixes and compares. Says whether two ducks are on the same team.',
     ritaj: 'Says whether her two neighbors are truthful, or one of them lies. A liar is an impostor or scrambled.',
 
     lab: 'Says whether an impostor sits next to her.',

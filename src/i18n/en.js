@@ -12,6 +12,8 @@ export default {
     fayzah: { name: 'Fayzah', ability: 'Radar: pick a card to learn how far the nearest impostor is' },
     motivator: { name: 'Motivator', ability: 'Hype: your next wrong expel costs no feather' },
     ahmad: { name: 'Ahmad', ability: 'Patience: pick a card; after your next correct expel he reveals it' },
+    dawoud: { name: 'Dawoud', ability: 'Sample: pick a card to learn if it is scrambled' },
+    hora: { name: 'Hora', ability: 'Reaction: pick 3 cards to learn if any is an impostor' },
     ritaj: { name: 'Dr. Ritaj', ability: 'Memory: pick a card to learn if its line is true' },
 
     lab: { name: 'Lab Duck' },
