@@ -4,7 +4,7 @@ import { getCard } from './cards.js';
 import { answerFor, truthful } from './statements.js';
 import { solve } from './solver.js';
 
-const NO_INFO_ABILITIES = ['featherShield', 'delayedIdentity'];
+const NO_INFO_ABILITIES = ['featherShield', 'delayedIdentity', 'eureka'];
 
 export function randomTargets(rng, world, i, ability) {
   if (ability.kind === 'rowEvilCountOf') return [rng.int(0, world.layout.rows.length - 1)];

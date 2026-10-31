@@ -14,6 +14,8 @@ export default {
     motivator: 'يقارن: هل المتنكرين اللي أرقامهم أصغر منه أكثر، ولا اللي أرقامهم أكبر؟',
     ahmad: 'هادي وصبور. يقول إن وحدة على الأقل من بطتين بريئة.',
     dawoud: 'يفحص العينات بمجهره. يقول إذا فيه متنكر جنبه.',
+    muaili: 'نظارته ما تفوّت شي، ودفتره ما يفارقه. ما يصدق الكلام، يصدق النتيجة بس. يقول إن وحدة على الأقل من بطتين بريئة.',
+    kiraz: 'مهندسة الاحتمالات. تفكك أي نظام لين تلقى نقطة ضعفه، بس لازم تفهمه أول. تقارن عدد المتنكرين بين نصفي الطاولة.',
     hora: 'تخلط وتقارن. تقول عن بطتين إذا الثنتين بريئات أو الثنتين متنكرات، أو وحدة بريئة ووحدة متنكرة.',
     ritaj: 'تقول إذا جارتيها صادقات، أو بينهم وحدة كذابة. الكذابة ممكن تكون متنكرة أو مخربطة.',
 
@@ -73,6 +75,8 @@ export default {
     motivator: 'Compares impostors numbered below him with those numbered above him.',
     ahmad: 'Calm and patient. Says at least one of two ducks is innocent.',
     dawoud: 'Checks samples under his microscope. Says whether an impostor sits next to him.',
+    muaili: 'His glasses miss nothing and his clipboard never leaves him. He trusts results, not talk. Says at least one of two ducks is innocent.',
+    kiraz: 'The Architect of Possibilities. Takes any system apart until she finds its weak point, but she has to understand it first. Compares impostors in the two halves of the table.',
     hora: 'Mixes and compares. Says whether two ducks are both innocent or both impostors, or one of each.',
     ritaj: 'Says whether her two neighbors are truthful, or one of them lies. A liar is an impostor or scrambled.',
 

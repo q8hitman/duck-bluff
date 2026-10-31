@@ -8,6 +8,25 @@ import { chooseStatement } from './generator.js';
 
 const noop = state => ({ state, events: [] });
 
+// Eureka needs a look at the system first: this many other cards flipped.
+export const EUREKA_NEEDS = 3;
+export const eurekaReady = (state, i) => state.flipped.filter((up, j) => up && j !== i).length >= EUREKA_NEEDS;
+
+// One live impostor and one live innocent when she is truthful, two innocents when she lies.
+function eurekaStatement(state, i) {
+  const rng = createRng(state.seed * 31 + state.tick + i);
+  const live = state.truth.cards.map((_, j) => j).filter(j => j !== i && !state.expelled[j]);
+  const evil = rng.shuffle(live.filter(j => state.truth.cards[j].evil));
+  const clean = rng.shuffle(live.filter(j => !state.truth.cards[j].evil));
+  if (liar(state, i)) {
+    if (clean.length >= 2) return { kind: 'eureka', params: { a: clean[0], b: clean[1], has: true } };
+    const [a, b] = [...clean, ...evil];
+    return b === undefined ? null : { kind: 'eureka', params: { a, b, has: false } };
+  }
+  const [a, b] = [evil[0], clean[0] ?? evil[1]];
+  return a === undefined || b === undefined ? null : { kind: 'eureka', params: { a, b, has: true } };
+}
+
 export function createRound(generated, { feathers = 3, seed = 1 } = {}) {
   const n = generated.puzzle.shown.length;
   return {
@@ -63,6 +82,13 @@ export function useAbility(state, i, targets) {
   const ability = cardAt(state, i).ability;
   if (!playing(state) || !ability || !state.flipped[i] || state.expelled[i] || state.used[i]) return noop(state);
   if (!validTargets(state, i, ability, targets)) return noop(state);
+  if (ability.kind === 'eureka') {
+    const statement = eurekaReady(state, i) ? eurekaStatement(state, i) : null;
+    if (!statement) return noop(state);
+    const used = [...state.used];
+    used[i] = true;
+    return { state: { ...state, used, clues: [...state.clues, { from: i, statement }] }, events: [{ type: 'answer', i, targets: [], statement }] };
+  }
   const used = [...state.used];
   used[i] = true;
   if (ability.kind === 'featherShield') {

@@ -9,7 +9,7 @@ import { boardLabel } from '../../core/board.js';
 import { referredCards } from '../../core/refs.js';
 import { getCard, impostorArt } from '../../core/cards.js';
 import { generateRound, unlockedThrough } from '../../core/generator.js';
-import { createRound, flip, mark, expel, useAbility, setBusy } from '../../core/round.js';
+import { createRound, flip, mark, expel, useAbility, setBusy, eurekaReady, EUREKA_NEEDS } from '../../core/round.js';
 import { forceClubFor, onRoundWon, onRunLost, onFeatherLost, roundScore, factForWin, awardBadges, ROUNDS_PER_CHAPTER } from '../../core/progress.js';
 import { t, getLang, factText, factCount, cardText, cardDesc, impostorText, statementText } from '../../i18n/i18n.js';
 
@@ -400,6 +400,7 @@ export function roundScreen(root, app) {
 
   function startAbility(i) {
     const ability = getCard(shown[i]).ability;
+    if (ability.kind === 'eureka' && !eurekaReady(state, i)) return toast(t('eurekaEarly', { n: EUREKA_NEEDS }));
     closeSheet();
     if (ability.targets === 0) return applyAbility(i, []);
     setAiming(false);

@@ -3,7 +3,7 @@
 export const TIER_POINTS = { legendary: 4, strong: 3, medium: 2, weak: 1, flavor: 1 };
 
 // Portraits on a clean background.
-const CLEAN_ART = ['zahraa', 'ritaj', 'camel', 'abdullah', 'ahmad', 'rawan', 'shouq', 'loujain', 'fayzah', 'bassam', 'ali', 'ruaa', 'motivator', 'dawoud', 'hora'];
+const CLEAN_ART = ['zahraa', 'ritaj', 'camel', 'abdullah', 'ahmad', 'rawan', 'shouq', 'loujain', 'fayzah', 'bassam', 'ali', 'ruaa', 'motivator', 'dawoud', 'hora', 'muaili', 'kiraz'];
 
 const club = (id, chapter, kind, ability, targets, extra = {}) => ({
   id, group: 'club', tier: id === 'abdullah' ? 'legendary' : 'strong', chapter, kind,
@@ -24,6 +24,7 @@ export const CARDS = [
   club('camel', 1, 'rowEvilCount', 'rowEvilCountOf', 1),
   club('ali', 1, 'oneOfThree', 'oneOfThree', 3),
   club('shouq', 2, 'isCorrupted', 'isCorrupted', 1),
+  club('muaili', 2, 'oneOfTwoInnocent', 'countAmong', 2),
   club('rawan', 2, 'neighborsClean', 'saboteurAdjacent', 1),
   club('loujain', 2, 'sameTeam', 'sameTeam', 2),
   club('ruaa', 3, 'claimIsReal', 'claimIsReal', 1),
@@ -34,6 +35,7 @@ export const CARDS = [
   club('ahmad', 4, 'oneOfTwoInnocent', 'delayedIdentity', 1),
   club('ritaj', 4, 'neighborsTruthful', 'statementTrue', 1),
   club('hora', 4, 'sameTeam', 'oneOfThree', 3),
+  club('kiraz', 4, 'halvesCompare', 'eureka', 0),
 
   guest('lab', 'weak', 1, 'neighborHasEvil'),
   guest('guard', 'weak', 1, 'prevInnocent'),

@@ -13,6 +13,8 @@ export default {
     motivator: { name: 'Motivator', ability: 'Hype: your next wrong expel costs no feather' },
     ahmad: { name: 'Ahmad', ability: 'Patience: pick a card; after your next correct expel he reveals it' },
     dawoud: { name: 'Dawoud', ability: 'Sample: pick a card to learn if it is scrambled' },
+    muaili: { name: 'Muaili', ability: 'Experiment: pick 2 ducks to learn exactly how many impostors they include' },
+    kiraz: { name: 'Keraz', ability: 'Eureka: once 3 other cards are flipped, she names 2 ducks with an impostor between them' },
     hora: { name: 'Hora', ability: 'Reaction: pick 3 cards to learn if any is an impostor' },
     ritaj: { name: 'Dr. Ritaj', ability: 'Memory: pick a card to learn if its line is true' },
 
@@ -129,6 +131,7 @@ export default {
     retry: 'Try again',
     toMenu: 'Menu',
     newDucks: 'New ducks joined!',
+    eurekaEarly: 'Keraz must understand the system first: flip {n} other cards',
     shieldArmed: 'Hype is on! Your next wrong expel costs no feather',
     shieldWorked: 'Hype saved you! No feather lost 💪',
     shieldFailed: 'The Hype was fake! You lost a feather',

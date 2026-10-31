@@ -122,6 +122,16 @@ export const STATEMENT_KINDS = {
     candidates: (w, i) => triples(others(w, i)).map(targets => ({ targets, has: true })),
     answer: (w, i, targets) => ({ targets, has: targets.some(t => evil(w, t)) }),
   },
+  countAmong: {
+    counting: true,
+    evaluate: (w, i, p) => countEvil(w, [p.a, p.b]) === p.n,
+    answer: (w, i, [a, b]) => ({ a, b, n: countEvil(w, [a, b]) }),
+  },
+  // Who it names depends on what is still on the table, so round.js picks the two.
+  eureka: {
+    evaluate: (w, i, p) => (evil(w, p.a) || evil(w, p.b)) === p.has,
+    answer: (w, i, [a, b]) => ({ a, b, has: evil(w, a) || evil(w, b) }),
+  },
   oneOfTwoInnocent: {
     evaluate: (w, i, p) => !evil(w, p.a) || !evil(w, p.b),
     candidates: (w, i) => pairs(others(w, i)).map(([a, b]) => ({ a, b })),

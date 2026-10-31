@@ -14,7 +14,7 @@ test('every statement kind renders in both languages', () => {
     setLang(lang);
     for (const [kind, def] of Object.entries(STATEMENT_KINDS)) {
       const samples = def.candidates ? def.candidates(world, 1).slice(0, 6) : [];
-      if (def.answer) samples.push(answerFor(world, 1, kind, kind === 'sameTeam' ? [0, 2] : kind === 'oneOfThree' ? [0, 2, 3] : kind === 'rowEvilCountOf' ? [1] : [2], false));
+      if (def.answer) samples.push(answerFor(world, 1, kind, ['sameTeam', 'countAmong', 'eureka'].includes(kind) ? [0, 2] : kind === 'oneOfThree' ? [0, 2, 3] : kind === 'rowEvilCountOf' ? [1] : [2], false));
       assert.ok(samples.length, kind);
       for (const params of samples) {
         const text = statementText({ kind, params });
