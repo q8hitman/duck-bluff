@@ -15,7 +15,7 @@ function collect(layout, i, { kind, params: p }) {
     case 'rowEvilCount': return layout.rows[layout.rowOf[i]];
     case 'rowEvilCountOf': case 'rowHasEvil': return layout.rows[p.row];
     case 'cornerHasEvil': return corners(layout);
-    case 'neighborEvilCountOf': case 'saboteurAdjacent': return [p.target, ...neighbors(layout, p.target)];
+    case 'neighborEvilCountOf': case 'saboteurAdjacent': case 'areaHasEvil': return [p.target, ...neighbors(layout, p.target)];
     default:
       if (p.targets) return p.targets;
       if ('a' in p) return [p.a, p.b];

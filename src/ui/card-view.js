@@ -38,7 +38,7 @@ export function createCardView(i, shownId, onTap, onInfo) {
     // Shrink long names to fit one line on the plate.
     sizeName(cardWidth) {
       const chars = nameEl.textContent.length;
-      const size = Math.min(Math.max(9, cardWidth * 0.115), (cardWidth * 0.8) / (chars * 0.5));
+      const size = Math.min(Math.max(9, cardWidth * 0.115), (cardWidth * 0.8) / (chars * 0.56));
       nameEl.style.fontSize = `${Math.max(6.5, size).toFixed(1)}px`;
     },
     unmask(impostorType, name) {

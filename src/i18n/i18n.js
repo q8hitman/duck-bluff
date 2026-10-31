@@ -40,6 +40,7 @@ const AR = {
   sideCompare: (p, x) => `عدد المتنكرين من ${x.below} ${x.cmp[p.cmp]} اللي من ${x.above}`,
   halvesCompare: (p, x) => `عدد المتنكرين من ${x.half1} ${x.cmp[p.cmp]} اللي من ${x.half2}`,
   oneOfThree: (p, x) => (p.has ? `بين ${x.who} فيه متنكر` : `ما فيه متنكر بين ${x.who}`),
+  areaHasEvil: (p, x) => `${x.c(p.target)} وجيرانها: ${p.has ? 'بينهم متنكر' : 'ما فيهم متنكر'}`,
   countAmong: (p, x) => `بين ${x.c(p.a)} و${x.c(p.b)}: ${p.n === 0 ? 'ما فيه متنكر' : p.n === 1 ? 'متنكر واحد' : 'متنكرين'}`,
   eureka: (p, x) => (p.has ? `يوريكا! بين ${x.c(p.a)} و${x.c(p.b)} فيه متنكر` : `يوريكا! ما فيه متنكر بين ${x.c(p.a)} و${x.c(p.b)}`),
   oneOfTwoInnocent: (p, x) => `على الأقل وحدة من ${x.who} بريئة`,
@@ -82,6 +83,7 @@ const EN = {
   sideCompare: (p, x) => `Impostors in ${x.below}: ${x.cmp[p.cmp]} in ${x.above}`,
   halvesCompare: (p, x) => `Impostors in ${x.half1}: ${x.cmp[p.cmp]} in ${x.half2}`,
   oneOfThree: (p, x) => (p.has ? `An impostor is among ${x.who}` : `No impostor among ${x.who}`),
+  areaHasEvil: (p, x) => `${x.c(p.target)} and its neighbors: ${p.has ? 'an impostor is among them' : 'no impostor among them'}`,
   countAmong: (p, x) => `${x.c(p.a)} and ${x.c(p.b)}: ${p.n === 0 ? 'no impostors' : p.n === 1 ? 'one impostor' : `${p.n} impostors`}`,
   eureka: (p, x) => (p.has ? `Eureka! An impostor is between ${x.c(p.a)} and ${x.c(p.b)}` : `Eureka! No impostor between ${x.c(p.a)} and ${x.c(p.b)}`),
   oneOfTwoInnocent: (p, x) => `At least one of ${x.who} is innocent`,
@@ -120,10 +122,12 @@ const VOICE = {
   ar: {
     cafeteria: (p, x) => `${x.c(p.target)} أكلت كرواساني، متنكرة! 🥐`,
     photographer: (p, x) => `صورت ${x.c(p.target)}: بريئة 📸`,
+    turki: (p, x) => `${x.c(p.target)} متنكرة. لا تزعلون، هذا علم ☕`,
   },
   en: {
     cafeteria: (p, x) => `${x.c(p.target)} ate my croissant: an impostor! 🥐`,
     photographer: (p, x) => `I filmed ${x.c(p.target)}: innocent 📸`,
+    turki: (p, x) => `${x.c(p.target)} is an impostor. Don't cry, it's science ☕`,
   },
 };
 

@@ -8,7 +8,7 @@ test('card ids are unique and groups have the right sizes', () => {
   const ids = CARDS.map(c => c.id);
   assert.equal(new Set(ids).size, ids.length);
   const club = CARDS.filter(c => c.group === 'club');
-  assert.equal(club.length, 17);
+  assert.equal(club.length, 18);
   assert.equal(CARDS.filter(c => c.tier === 'flavor').length, 18);
 });
 

@@ -3,7 +3,7 @@
 export const TIER_POINTS = { legendary: 4, strong: 3, medium: 2, weak: 1, flavor: 1 };
 
 // Portraits on a clean background.
-const CLEAN_ART = ['zahraa', 'ritaj', 'camel', 'abdullah', 'ahmad', 'rawan', 'shouq', 'loujain', 'fayzah', 'bassam', 'ali', 'ruaa', 'motivator', 'dawoud', 'hora', 'muaili', 'kiraz'];
+const CLEAN_ART = ['zahraa', 'ritaj', 'camel', 'abdullah', 'ahmad', 'rawan', 'shouq', 'loujain', 'fayzah', 'bassam', 'ali', 'ruaa', 'motivator', 'dawoud', 'hora', 'muaili', 'kiraz', 'turki'];
 
 const club = (id, chapter, kind, ability, targets, extra = {}) => ({
   id, group: 'club', tier: id === 'abdullah' ? 'legendary' : 'strong', chapter, kind,
@@ -31,6 +31,7 @@ export const CARDS = [
   club('zahraa', 3, 'neighborEvilCount', 'neighborEvilCountOf', 1),
   club('fayzah', 3, 'nearestEvil', 'nearestEvilFrom', 1),
   club('dawoud', 3, 'neighborHasEvil', 'isCorrupted', 1),
+  club('turki', 3, 'nameEvil', 'areaHasEvil', 1),
   club('motivator', 4, 'sideCompare', 'featherShield', 0),
   club('ahmad', 4, 'oneOfTwoInnocent', 'delayedIdentity', 1),
   club('ritaj', 4, 'neighborsTruthful', 'statementTrue', 1),

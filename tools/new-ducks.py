@@ -1,12 +1,12 @@
-# Cuts the two newest club ducks from their dark sheets onto a card background.
+# Cuts the newest club ducks from their dark sheets onto a card background.
 # Run with the audio-tools venv: python tools/new-ducks.py
 import numpy as np
 from PIL import Image, ImageFilter
 from rembg import new_session, remove
 
 SIZE = (420, 454)
-DUCKS = {'muaili': (205, 215, 232), 'kiraz': (240, 212, 214)}
-BOX = (670, 0, 1536, 1024)  # the large pose on each sheet
+DUCKS = {'muaili': (205, 215, 232), 'kiraz': (240, 212, 214), 'turki': (226, 214, 196)}
+BOX = (600, 0, 1536, 1024)  # the large pose on each sheet
 session = new_session('isnet-anime')
 
 for name, color in DUCKS.items():

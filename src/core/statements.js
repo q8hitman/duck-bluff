@@ -122,6 +122,10 @@ export const STATEMENT_KINDS = {
     candidates: (w, i) => triples(others(w, i)).map(targets => ({ targets, has: true })),
     answer: (w, i, targets) => ({ targets, has: targets.some(t => evil(w, t)) }),
   },
+  areaHasEvil: {
+    evaluate: (w, i, p) => [p.target, ...neighbors(w.layout, p.target)].some(j => evil(w, j)) === p.has,
+    answer: (w, i, [t]) => ({ target: t, has: [t, ...neighbors(w.layout, t)].some(j => evil(w, j)) }),
+  },
   countAmong: {
     counting: true,
     evaluate: (w, i, p) => countEvil(w, [p.a, p.b]) === p.n,

@@ -56,3 +56,16 @@ test('the experiment counts impostors exactly, and a liar gets it wrong', () => 
     assert.equal(evaluate(s.truth, 0, statement), !lying);
   }
 });
+
+test('heavy teasing covers the chosen duck and both its neighbors, and a liar gets it wrong', () => {
+  const cards = lying => [lying ? slot('turki', { corrupted: true }) : slot('turki'), slot('ali'), slot('camel'), slot('bassam'), evilSlot(), slot('ruaa')];
+  const shown = ['turki', 'ali', 'camel', 'bassam', 'lab', 'ruaa'];
+  for (const lying of [false, true]) {
+    const s = flipAll(round(cards(lying), shown));
+    for (const [target, has] of [[3, true], [4, true], [5, true], [1, false], [2, false]]) {
+      const { statement } = useAbility(s, 0, [target]).state.clues[0];
+      assert.equal(statement.params.has, lying ? !has : has, `target ${target} lying ${lying}`);
+      assert.equal(evaluate(s.truth, 0, statement), !lying);
+    }
+  }
+});

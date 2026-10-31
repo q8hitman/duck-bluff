@@ -14,6 +14,7 @@ export default {
     ahmad: { name: 'Ahmad', ability: 'Patience: pick a card; after your next correct expel he reveals it' },
     dawoud: { name: 'Dawoud', ability: 'Sample: pick a card to learn if it is scrambled' },
     muaili: { name: 'Muaili', ability: 'Experiment: pick 2 ducks to learn exactly how many impostors they include' },
+    turki: { name: 'Turki', ability: 'Heavy Teasing: pick a duck; he roasts it and its neighbors until someone cracks, and tells you if an impostor is among them' },
     kiraz: { name: 'Keraz', ability: 'Eureka: once 3 other cards are flipped, she names 2 ducks with an impostor between them' },
     hora: { name: 'Hora', ability: 'Reaction: pick 3 cards to learn if any is an impostor' },
     ritaj: { name: 'Dr. Ritaj', ability: 'Memory: pick a card to learn if its line is true' },
