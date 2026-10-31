@@ -1,9 +1,9 @@
 // App shell: loads the save, applies settings and switches screens.
-import { createProgress } from './core/progress.js';
+import { createProgress, DEFAULT_MUSIC_VOLUME } from './core/progress.js';
 import { setLang, dir, getLang, t } from './i18n/i18n.js';
 import { h, wait, setReducedPreference } from './ui/motion.js';
 import { setSound, audio } from './ui/sound.js';
-import { startMusic, setMusic, setMood } from './ui/music.js';
+import { startMusic, setMusic, setMood, setMusicVolume } from './ui/music.js';
 import { buildWorld } from './ui/world.js';
 import { roundScreen } from './ui/screens/round.js';
 import { menuScreen, chaptersScreen, introScreen, albumScreen, settingsScreen } from './ui/screens/pages.js';
@@ -28,6 +28,7 @@ const app = {
     document.title = t('appName');
     setReducedPreference(s.reduceMotion);
     setSound(s.sound);
+    setMusicVolume(s.musicVolume ?? DEFAULT_MUSIC_VOLUME);
     setMusic(s.music);
     if (s.music && audioUnlocked) startMusic();
   },

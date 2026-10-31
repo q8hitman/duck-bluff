@@ -2,7 +2,8 @@
 import { h } from '../motion.js';
 import * as fx from '../fx.js';
 import { CARDS, IMPOSTORS, getCard, impostorArt } from '../../core/cards.js';
-import { startChapter, resumeRun, albumSeen, BADGES } from '../../core/progress.js';
+import { startChapter, resumeRun, albumSeen, BADGES, DEFAULT_MUSIC_VOLUME } from '../../core/progress.js';
+import { setMusicVolume } from '../music.js';
 import { t, cardText, cardDesc, impostorText } from '../../i18n/i18n.js';
 
 const topBar = (app, title, to = 'menu') => h('div', { class: 'page-top' },
@@ -50,6 +51,7 @@ export function chaptersScreen(root, app) {
     app.persist();
     app.go('round');
   };
+  root.classList.add('narrow');
   root.append(topBar(app, t('chapters')), h('div', { class: 'chapter-list' },
     [1, 2, 3, 4, 'endless'].map(id => h('button', { class: 'chapter', disabled: !open(id), onclick: () => pick(id) },
       h('span', { class: 'num' }, id === 'endless' ? '∞' : String(id)),
@@ -106,6 +108,32 @@ export function albumScreen(root, app) {
     group('🎭', IMPOSTORS.map(i => ({ id: i.id, img: impostorArt(i.id), name: impostorText(i.id).name }))));
 }
 
+// Follows the finger live and saves on release; redrawing the page would drop the slider.
+function musicVolumeRow(app) {
+  const s = app.save.settings;
+  const value = s.musicVolume ?? DEFAULT_MUSIC_VOLUME;
+  const label = h('output', { class: 'volume-value' }, `${value}%`);
+  const slider = h('input', {
+    class: 'volume',
+    type: 'range',
+    min: '0',
+    max: '100',
+    step: '5',
+    value: String(value),
+    'aria-label': t('musicVolume'),
+  });
+  if (!s.music) slider.disabled = true;
+  slider.addEventListener('input', () => {
+    label.textContent = `${slider.value}%`;
+    setMusicVolume(Number(slider.value));
+  });
+  slider.addEventListener('change', () => {
+    app.save = { ...app.save, settings: { ...app.save.settings, musicVolume: Number(slider.value) } };
+    app.persist();
+  });
+  return h('div', { class: `setting${s.music ? '' : ' off'}` }, h('strong', {}, t('musicVolume')), h('div', { class: 'volume-row' }, slider, label));
+}
+
 export function settingsScreen(root, app) {
   const segmented = (options, current, onPick) => h('div', { class: 'segmented' },
     options.map(([value, label]) => h('button', { class: `btn${current === value ? ' on' : ''}`, onclick: () => onPick(value) }, label)));
@@ -116,6 +144,7 @@ export function settingsScreen(root, app) {
     app.go('settings');
   };
   const s = app.save.settings;
+  root.classList.add('narrow');
   root.append(topBar(app, t('settings')),
     h('div', { class: 'setting' }, h('strong', {}, t('language')),
       segmented([['ar', 'العربية'], ['en', 'English']], s.lang, lang => change({ lang }))),
@@ -125,6 +154,7 @@ export function settingsScreen(root, app) {
       segmented([[true, t('on')], [false, t('off')]], s.sound, sound => change({ sound }))),
     h('div', { class: 'setting' }, h('strong', {}, t('music')),
       segmented([[true, t('on')], [false, t('off')]], s.music, music => change({ music }))),
+    musicVolumeRow(app),
     h('div', { class: 'setting' }, h('strong', {}, t('facts')),
       segmented([[true, t('on')], [false, t('off')]], s.facts, facts => change({ facts }))));
 }

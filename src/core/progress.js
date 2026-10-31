@@ -8,6 +8,8 @@ const all = [...CARDS, ...IMPOSTORS];
 const idsOfChapter = n => all.filter(c => c.chapter === n).map(c => c.id);
 const clubIds = () => CARDS.filter(c => c.group === 'club').map(c => c.id);
 
+export const DEFAULT_MUSIC_VOLUME = 50;
+
 export function defaultSave() {
   return {
     version: 1,
@@ -21,7 +23,7 @@ export function defaultSave() {
     nextSeed: 1,
     score: 0,
     wins: 0,
-    settings: { lang: 'ar', reduceMotion: null, sound: true, music: true, facts: true },
+    settings: { lang: 'ar', reduceMotion: null, sound: true, music: true, musicVolume: DEFAULT_MUSIC_VOLUME, facts: true },
   };
 }
 

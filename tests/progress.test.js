@@ -107,3 +107,7 @@ test('badges are given once and match how the round went', () => {
   assert.deepEqual(awardBadges(first.save, round).fresh, []);
   assert.ok(awardBadges(defaultSave(), { feathers: 1, hadAbilities: true, usedAbility: true }).fresh.includes('clutch'));
 });
+
+test('music volume starts at the level the game has always played at', () => {
+  assert.equal(defaultSave().settings.musicVolume, 50);
+});

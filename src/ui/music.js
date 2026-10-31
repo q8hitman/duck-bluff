@@ -12,7 +12,7 @@ const TRACKS = {
   chapterendless: ['khaleeji', 'ard', 'souq', 'layl', 'khaleeji2', 'sirr', 'finale', 'hauntedlab', 'detective', 'firstday', 'morning'].map(music),
   lastfeather: ['lastfeather'].map(music),
 };
-const VOLUME = 0.5;
+let volume = 0.5; // the player's choice, 0 to 1
 const OVERLAP = 3; // seconds the end of a track overlaps the next start
 const FADE = 1.2;
 
@@ -48,7 +48,7 @@ function keepOnly(...urls) {
 function ensureGraph(ctx) {
   if (master) return;
   master = ctx.createGain();
-  master.gain.value = VOLUME;
+  master.gain.value = volume;
   master.connect(ctx.destination);
 }
 
@@ -149,6 +149,12 @@ export function setMusic(on) {
   else stopPlaying();
 }
 
+// percent is 0 to 100; heard at once, so the slider can be set by ear.
+export function setMusicVolume(percent) {
+  volume = Math.min(100, Math.max(0, percent)) / 100;
+  if (master) fade(master.gain, volume, 0.15);
+}
+
 export function setMood(value) {
   mood = value;
   playMood();
@@ -162,6 +168,6 @@ export function setTension(value) {
 // Dip under a big moment, then come back.
 export function duckMusic(seconds = 1.6) {
   if (!master) return;
-  fade(master.gain, VOLUME * 0.3, 0.2);
-  setTimeout(() => { if (master) fade(master.gain, VOLUME, 1); }, seconds * 1000);
+  fade(master.gain, volume * 0.3, 0.2);
+  setTimeout(() => { if (master) fade(master.gain, volume, 1); }, seconds * 1000);
 }

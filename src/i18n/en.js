@@ -81,6 +81,7 @@ export default {
     reduceMotion: 'Reduce motion',
     sound: 'Sound effects',
     music: 'Music',
+    musicVolume: 'Music volume',
     on: 'On',
     off: 'Off',
     auto: 'Device default',

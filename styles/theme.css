@@ -73,3 +73,28 @@ h1 { letter-spacing: .3px; }
 .card-info { border: 2px solid var(--outline); background: var(--gold); color: var(--outline); }
 .card-info:hover { background: #fff0b8; }
 .card-num { border-color: var(--gold); }
+
+.setting, .chapter, .album-card, .intro-item { border: 2.5px solid var(--outline); box-shadow: 2px 3px 0 var(--outline); }
+.setting strong, .chapter strong, .album-card span, .intro-item strong, .badge strong { font-family: var(--display); font-weight: 400; }
+.setting strong { font-size: 17px; }
+.chapter strong { font-size: 19px; }
+.album-card span { font-size: 13.5px; }
+.intro-item strong { font-size: 18px; }
+.chapter .num { border: 2px solid var(--outline); }
+.segmented .btn.on { border-color: var(--outline); }
+.page-top h2 { font-size: 27px; }
+.album-group h3 { font-size: 20px; }
+.badge { border: 2px solid var(--outline); }
+.badge.on { box-shadow: 2px 3px 0 var(--outline); background: var(--gold); }
+
+.setting.off { opacity: .55; }
+.volume-row { display: flex; align-items: center; gap: 10px; flex: 1 1 200px; max-width: 340px; }
+.volume-value { min-width: 44px; font-weight: 800; text-align: end; direction: ltr; }
+.volume { flex: 1; min-width: 0; height: 28px; margin: 0; accent-color: var(--green); cursor: pointer; }
+.volume:disabled { cursor: default; }
+.volume:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 6px; }
+
+/* At the table a message rises from the bottom, so it never covers the title or the feathers. */
+body.at-table #toasts { top: auto; bottom: calc(14px + env(safe-area-inset-bottom)); }
+
+.narrow { max-width: 640px; margin-inline: auto; }

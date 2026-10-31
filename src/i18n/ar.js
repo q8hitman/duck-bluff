@@ -81,6 +81,7 @@ export default {
     reduceMotion: 'تقليل الحركة',
     sound: 'الأصوات',
     music: 'الموسيقى',
+    musicVolume: 'صوت الموسيقى',
     on: 'شغّال',
     off: 'طافي',
     auto: 'حسب الجهاز',
