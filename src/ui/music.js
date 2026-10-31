@@ -4,12 +4,12 @@ import { audio } from './sound.js';
 
 const music = name => `assets/music/${name}.mp3`;
 const TRACKS = {
-  menu: ['morning', 'khaleeji'].map(music),
-  chapter1: ['firstday', 'morning'].map(music),
-  chapter2: ['detective', 'firstday'].map(music),
-  chapter3: ['hauntedlab', 'detective'].map(music),
-  chapter4: ['finale', 'hauntedlab'].map(music),
-  chapterendless: ['khaleeji', 'finale', 'hauntedlab', 'detective', 'firstday', 'morning'].map(music),
+  menu: ['khaleeji2', 'morning'].map(music),
+  chapter1: ['souq', 'firstday'].map(music),
+  chapter2: ['sirr', 'detective'].map(music),
+  chapter3: ['layl', 'hauntedlab'].map(music),
+  chapter4: ['ard', 'finale'].map(music),
+  chapterendless: ['khaleeji', 'ard', 'souq', 'layl', 'khaleeji2', 'sirr', 'finale', 'hauntedlab', 'detective', 'firstday', 'morning'].map(music),
   lastfeather: ['lastfeather'].map(music),
 };
 const VOLUME = 0.5;
