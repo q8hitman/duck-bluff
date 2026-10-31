@@ -1,7 +1,7 @@
 // Menu, chapter select, new-duck intro, album and settings.
 import { h } from '../motion.js';
 import * as fx from '../fx.js';
-import { CARDS, IMPOSTORS, getCard, impostorArt, frameOf } from '../../core/cards.js';
+import { CARDS, IMPOSTORS, getCard, impostorArt } from '../../core/cards.js';
 import { startChapter, resumeRun } from '../../core/progress.js';
 import { t, cardText, cardDesc, impostorText } from '../../i18n/i18n.js';
 
@@ -21,8 +21,7 @@ export function menuScreen(root, app) {
     document.body.append(back);
   };
   root.append(h('img', { class: 'menu-logo', src: 'assets/ui/logo-full.webp', alt: 'Biological Sciences Club, Kuwait University' }), h('div', { class: 'menu' },
-    h('div', { class: 'menu-fan', 'aria-hidden': 'true' }, ['camel', 'rawan', 'abdullah', 'loujain', 'ali'].map((id, n) => h('div', { class: 'fan-slot', style: `--n:${n - 2}` },
-      h('div', { class: 'fan-card' }, h('img', { class: 'card-art', src: getCard(id).portrait, alt: '' }), h('img', { class: 'card-frame', src: frameOf(id), alt: '' }))))),
+    h('img', { class: 'menu-emblem', src: 'assets/ui/emblem.webp', alt: '' }),
     h('h1', {}, t('appName')),
     h('p', {}, t('tagline')),
     h('div', { class: 'menu-buttons' },

@@ -6,11 +6,14 @@ import { cardText } from '../i18n/i18n.js';
 
 const MARK_ICON = { innocent: '✅', suspect: '❓', evil: '❌' };
 
+// On the small name plate "duck" goes without saying.
+const plateName = name => name.replace(/^(البطة|بطة) /, '').replace(/ Duck$/, '');
+
 export function createCardView(i, shownId, onTap) {
   const card = getCard(shownId);
   const portrait = h('img', { class: 'card-art', src: card.portrait, alt: '', draggable: 'false' });
   const frame = h('img', { class: 'card-frame', src: frameOf(shownId), alt: '', draggable: 'false' });
-  const nameEl = h('div', { class: 'card-name' }, h('span', {}, cardText(shownId).name));
+  const nameEl = h('div', { class: 'card-name' }, h('span', {}, plateName(cardText(shownId).name)));
   const mark = h('span', { class: 'card-mark' });
   const tag = h('span', { class: 'card-tag', hidden: 'hidden' });
   const face = h('div', { class: 'card-side card-face' }, portrait, frame, nameEl, tag,
@@ -34,10 +37,17 @@ export function createCardView(i, shownId, onTap) {
       mark.textContent = MARK_ICON[markValue] ?? '';
       el.setAttribute('aria-label', `${boardLabel(i)} ${flipped ? cardText(shownId).name : ''}`);
     },
+    // Shrink long names to fit one line on the plate.
+    sizeName(cardWidth) {
+      const chars = nameEl.textContent.length;
+      const size = Math.min(Math.max(9, cardWidth * 0.115), (cardWidth * 0.8) / (chars * 0.5));
+      nameEl.style.fontSize = `${Math.max(6.5, size).toFixed(1)}px`;
+    },
     unmask(impostorType, name) {
       portrait.src = impostorArt(impostorType);
       frame.src = 'assets/ui/frame-impostor.webp';
       nameEl.firstChild.textContent = name;
+      if (nameEl.style.fontSize) this.sizeName(el.offsetWidth);
     },
     showTag(text, calm = false) {
       tag.textContent = text;

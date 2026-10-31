@@ -9,16 +9,7 @@
 }
 
 .menu-logo { position: absolute; top: 12px; left: 14px; width: clamp(74px, 13vw, 130px); height: auto; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .7)); z-index: 2; }
-.menu-fan { position: relative; width: min(92vw, 400px); height: min(50vw, 190px); margin-bottom: 6px; }
-.fan-slot {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: 27%;
-  transform: translateX(calc(-50% + var(--n) * 68%)) translateY(calc((var(--n) * var(--n)) * 6%)) rotate(calc(var(--n) * 7deg));
-  z-index: calc(3 - var(--n) * var(--n));
-}
-.fan-card { position: relative; aspect-ratio: 5 / 7; }
+.menu-emblem { width: min(62vw, 270px); height: auto; filter: drop-shadow(0 8px 14px rgba(0, 0, 0, .5)); }
 .menu h1 { font-size: clamp(24px, 6.5vw, 38px); text-shadow: 0 2px 8px #000; }
 .menu p { margin: 0 0 8px; color: #f3e6c8; font-size: 14px; text-shadow: 0 1px 4px #000; }
 .menu-buttons { display: flex; flex-direction: column; gap: 9px; width: min(100%, 320px); }

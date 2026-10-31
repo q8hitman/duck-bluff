@@ -1,6 +1,7 @@
 # Cuts the club ducks out of the green-screen sheet: crop, upscale, key out the green.
 # Run with the art-tools venv: python tools/slice-green.py
 import subprocess
+import sys
 from pathlib import Path
 import numpy as np
 from PIL import Image
@@ -18,32 +19,46 @@ BOXES = {
     'hora': (920, 675, 1192, 985),
 }
 
-sheet = Image.open('assets/ref/team-green.png').convert('RGB')
-for name, box in BOXES.items():
-    raw = OUT / f'{name}-raw.png'
-    big = OUT / f'{name}-big.png'
-    sheet.crop(box).save(raw)
-    subprocess.run([str(ESRGAN), '-i', str(raw.resolve()), '-o', str(big.resolve()), '-n', 'realesrgan-x4plus-anime', '-s', '4'],
-                   check=True, cwd=ESRGAN.parent, capture_output=True)
-    px = np.array(Image.open(big).convert('RGB')).astype(float)
-    r, g, b = px[..., 0], px[..., 1], px[..., 2]
-    green = (g - np.maximum(r, b)) / 255
+NEW_GUESTS = {
+    'hyped': (235, 15, 715, 505), 'cameraOff': (835, 15, 1255, 505),
+    'volatile': (250, 505, 665, 1010), 'lucky': (865, 510, 1275, 1005),
+}
 
-    # solid = clearly not screen; soften the edge and remove green spill from it
-    alpha = np.clip(1 - (green - 0.12) / 0.22, 0, 1)
-    solid = alpha > 0.5
-    labels, count = ndi.label(solid, structure=np.ones((3, 3), bool))
-    if count:
-        sizes = ndi.sum(solid, labels, range(1, count + 1))
-        # keep the duck and anything sizeable beside it, drop specks from neighbours
-        big_parts = [i + 1 for i, s in enumerate(sizes) if s >= 30]
-        keep = np.isin(labels, big_parts)
-        alpha = np.where(ndi.binary_dilation(keep, iterations=2), alpha, 0)
-    spill = green > 0
-    px[..., 1] = np.where(spill, np.maximum(r, b), g)
 
-    out = np.dstack([px, alpha * 255]).astype('uint8')
-    Image.fromarray(out, 'RGBA').save(OUT / f'{name}.png')
-    raw.unlink()
-    big.unlink()
-    print(name, out.shape[1], out.shape[0])
+def cut(sheet_path, boxes):
+    sheet = Image.open(sheet_path).convert('RGB')
+    for name, box in boxes.items():
+        raw = OUT / f'{name}-raw.png'
+        big = OUT / f'{name}-big.png'
+        sheet.crop(box).save(raw)
+        subprocess.run([str(ESRGAN), '-i', str(raw.resolve()), '-o', str(big.resolve()), '-n', 'realesrgan-x4plus-anime', '-s', '4'],
+                       check=True, cwd=ESRGAN.parent, capture_output=True)
+        px = np.array(Image.open(big).convert('RGB')).astype(float)
+        r, g, b = px[..., 0], px[..., 1], px[..., 2]
+        green = (g - np.maximum(r, b)) / 255
+
+        # solid = clearly not screen; soften the edge and remove green spill from it
+        alpha = np.clip(1 - (green - 0.12) / 0.22, 0, 1)
+        solid = alpha > 0.5
+        labels, count = ndi.label(solid, structure=np.ones((3, 3), bool))
+        if count:
+            sizes = ndi.sum(solid, labels, range(1, count + 1))
+            # keep the duck and anything sizeable beside it, drop specks from neighbours
+            big_parts = [i + 1 for i, s in enumerate(sizes) if s >= 30]
+            keep = np.isin(labels, big_parts)
+            alpha = np.where(ndi.binary_dilation(keep, iterations=2), alpha, 0)
+        spill = green > 0
+        px[..., 1] = np.where(spill, np.maximum(r, b), g)
+
+        out = np.dstack([px, alpha * 255]).astype('uint8')
+        Image.fromarray(out, 'RGBA').save(OUT / f'{name}.png')
+        raw.unlink()
+        big.unlink()
+        print(name, out.shape[1], out.shape[0])
+
+
+if __name__ == '__main__':
+    if 'guests' in sys.argv:
+        cut('assets/ref/guests-green.png', NEW_GUESTS)
+    else:
+        cut('assets/ref/team-green.png', BOXES)

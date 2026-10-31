@@ -1,10 +1,11 @@
 # Turns a club duck (transparent or on white) into a card portrait with a soft tint.
-# Run: python tools/clean-duck.py <source image> <duck id> [tint hex]
+# Run: python tools/clean-duck.py <source image> <duck id> [tint hex] [output folder]
 import sys
 from PIL import Image, ImageDraw, ImageFilter
 
 src, name = sys.argv[1], sys.argv[2]
 tint = sys.argv[3] if len(sys.argv) > 3 else '#d9c9a3'
+folder = sys.argv[4] if len(sys.argv) > 4 else 'assets/ducks'
 
 rgba = Image.open(src).convert('RGBA')
 alpha = rgba.getchannel('A')
@@ -33,5 +34,5 @@ scale = out_w * 0.92 / duck.width
 duck = duck.resize((round(duck.width * scale), round(duck.height * scale)), Image.LANCZOS)
 card = Image.new('RGBA', (out_w, out_h), tint)
 card.alpha_composite(duck, ((out_w - duck.width) // 2, round(out_h * 0.03)))
-card.convert('RGB').save(f'assets/ducks/{name}.webp', 'WEBP', quality=86, method=6)
+card.convert('RGB').save(f'{folder}/{name}.webp', 'WEBP', quality=86, method=6)
 print(name, card.size)

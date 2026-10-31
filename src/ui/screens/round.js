@@ -4,6 +4,7 @@ import { sounds } from '../sound.js';
 import { setTension, duckMusic } from '../music.js';
 import * as fx from '../fx.js';
 import { createCardView } from '../card-view.js';
+import { ringLayout } from '../ring.js';
 import { boardLabel } from '../../core/board.js';
 import { referredCards } from '../../core/refs.js';
 import { getCard, impostorArt } from '../../core/cards.js';
@@ -38,23 +39,44 @@ export function roundScreen(root, app) {
   const logEmpty = h('div', { class: 'log-empty' }, t('tapToFlip'));
   const views = shown.map((id, i) => createCardView(i, id, onCardTap));
 
-  const sizeClass = n <= 6 ? 0 : n <= 8 ? 1 : n <= 10 ? 2 : 3;
+  const seats = [];
   const caughtEl = h('div', { class: 'table-caught', role: 'img' });
   const centerLine = h('div', { class: 'center-line' });
   const bubbles = [];
 
   // Clockwise from the top in both languages, so card numbers never flip.
   function seat(i) {
-    const angle = (2 * Math.PI * i) / n - Math.PI / 2;
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-    // ducks at the top and bottom speak toward the middle, where there is room
-    const side = sin < -0.7 ? 'top' : sin > 0.7 ? 'bottom' : cos > 0 ? 'right' : 'left';
     bubbles[i] = h('div', { class: 'bubble', hidden: 'hidden' });
-    return h('div', {
-      class: `seat ${side}`,
-      style: `--cos:${cos.toFixed(4)};--sin:${sin.toFixed(4)}`,
-    }, views[i].el, bubbles[i]);
+    seats[i] = h('div', { class: 'seat' }, views[i].el, bubbles[i]);
+    return seats[i];
+  }
+
+  // Cards never touch: positions and size come from the table's real shape.
+  function placeSeats() {
+    const box = tableEl.getBoundingClientRect();
+    if (!box.width) return;
+    const phone = innerWidth < 900;
+    const dish = tableEl.querySelector('.dish').getBoundingClientRect();
+    const { card, points } = ringLayout({
+      n,
+      aspect: box.height / box.width,
+      maxCard: phone ? 0.28 : 0.13,
+      maxRx: phone ? 0.46 : 0.34,
+      maxRy: phone ? 0.5 : 0.41,
+      centerW: (dish.width + 8) / box.width,
+      centerH: (dish.height + (phone ? 80 : 44)) / box.width,
+    });
+    tableEl.style.setProperty('--cw', `${(card * box.width).toFixed(1)}px`);
+    views.forEach(view => view.sizeName(card * box.width));
+    const reach = Math.max(...points.map(p => Math.abs(p.y - 0.5)));
+    points.forEach((p, i) => {
+      const ny = (p.y - 0.5) / reach;
+      // ducks at the top and bottom speak toward the middle, where there is room
+      const side = ny < -0.7 ? 'top' : ny > 0.7 ? 'bottom' : p.x > 0.5 ? 'right' : 'left';
+      seats[i].className = `seat ${side}`;
+      seats[i].style.cssText = `left:${(p.x * 100).toFixed(2)}%;top:${(p.y * 100).toFixed(2)}%;width:${(card * 100).toFixed(2)}%`;
+    });
+    renderFocus();
   }
 
   const typeCounts = {};
@@ -64,7 +86,7 @@ export function roundScreen(root, app) {
   const aimLabel = h('span', {}, t('expel'));
   const aimButton = h('button', { class: 'aim-fab', onclick: () => setAiming(!aiming) }, h('span', { class: 'aim-icon' }, '🦆💨'), aimLabel);
 
-  const tableEl = h('div', { class: `table size-${sizeClass}`, onclick: e => { if (e.target === tableEl) setFocus(null); } },
+  const tableEl = h('div', { class: 'table', onclick: e => { if (e.target === tableEl) setFocus(null); } },
     h('div', { class: 'table-center' },
       h('div', { class: 'dish' }, h('i', { class: 'dish-ring' }), h('img', { class: 'dish-logo', src: 'assets/ui/logo.webp', alt: 'BSC' }), caughtEl),
       h('div', { class: 'center-note' }, centerLine, detailsBtn)),
@@ -89,6 +111,7 @@ export function roundScreen(root, app) {
         tableEl),
       h('div', { class: 'log-wrap' }, h('div', { class: 'log-title' }, `💬 ${t('clues')}`), logEmpty, logEl)),
   );
+  placeSeats();
   render();
   setTension(state.feathers === 1);
   views.forEach((view, i) => {
@@ -192,7 +215,9 @@ export function roundScreen(root, app) {
     else if (picking) { picking = null; render(); }
   };
   addEventListener('keydown', onKey);
-  addEventListener('resize', renderFocus);
+  // follows the table itself, so turning a phone can't leave stale sizes behind
+  const tableWatch = new ResizeObserver(() => placeSeats());
+  tableWatch.observe(tableEl);
 
   function baseStatement(i) {
     return statements[i] ?? state.clues.find(c => c.from === i && !isAbilityClue(c))?.statement ?? null;
@@ -465,5 +490,5 @@ export function roundScreen(root, app) {
     setTimeout(() => { if (root.isConnected) document.body.append(resultEl); }, reduced() ? 0 : 1000);
   }
 
-  return () => { removeEventListener('keydown', onKey); removeEventListener('resize', renderFocus); sheet?.remove(); aimButton.remove(); document.body.classList.remove('aiming'); fx.killAll(root); };
+  return () => { removeEventListener('keydown', onKey); tableWatch.disconnect(); sheet?.remove(); aimButton.remove(); document.body.classList.remove('aiming'); fx.killAll(root); };
 }

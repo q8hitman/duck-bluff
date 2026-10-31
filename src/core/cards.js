@@ -10,12 +10,9 @@ const club = (id, chapter, kind, ability, targets, extra = {}) => ({
   timing: 'onFlip', portrait: `assets/ducks/${id}.${CLEAN_ART.includes(id) ? 'webp' : 'png'}`, ability: { kind: ability, targets }, ...extra,
 });
 
-// Not in the art sheet yet, so they keep a drawn placeholder.
-const PLACEHOLDER = ['hyped', 'cameraOff', 'volatile', 'lucky'];
-
 const guest = (id, tier, chapter, kind, extra = {}) => ({
   id, group: 'guest', tier, chapter, kind, timing: 'onFlip',
-  portrait: `assets/guests/${id}.${PLACEHOLDER.includes(id) ? 'svg' : 'webp'}`, ability: null, ...extra,
+  portrait: `assets/guests/${id}.webp`, ability: null, ...extra,
 });
 
 // Light guests: simple clues said in a fun voice (see src/i18n/i18n.js).

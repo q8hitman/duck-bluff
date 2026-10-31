@@ -228,10 +228,9 @@ export function react(card, text) {
 
 export function menuIn(root) {
   if (calm()) return;
-  root.querySelectorAll('.fan-card').forEach((card, i) => {
-    gsap.from(card, { y: 60, scale: 0.6, opacity: 0, duration: 0.5, delay: i * 0.07, ease: 'back.out(1.6)', clearProps: 'scale,opacity' });
-    gsap.to(card, { y: -6, duration: 1.9 + i * 0.2, delay: 0.7 + i * 0.1, ease: 'sine.inOut', yoyo: true, repeat: -1 });
-  });
+  const emblem = root.querySelector('.menu-emblem');
+  gsap.from(emblem, { y: -30, scale: 0.7, rotation: -8, opacity: 0, duration: 0.65, ease: 'back.out(1.6)', clearProps: 'scale,opacity,rotation' });
+  gsap.to(emblem, { y: -8, rotation: 2, duration: 2.6, delay: 0.7, ease: 'sine.inOut', yoyo: true, repeat: -1 });
   gsap.from(root.querySelectorAll('.menu h1, .menu p, .menu-buttons .btn'), { y: 14, opacity: 0, duration: 0.36, stagger: 0.05, delay: 0.12, ease: 'power2.out', clearProps: 'all' });
 }
 
