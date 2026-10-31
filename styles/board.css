@@ -139,6 +139,61 @@ body.aiming .dish { border-color: #c8391c; }
 .card.selected .card-num { background: #fff; border-color: #fff; color: #17100a; scale: 1.12; }
 .table.focusing .seat:has(.card:not(.ref):not(.selected)) .card-side { filter: saturate(.55) brightness(.72); transition: filter 160ms ease-out; }
 
+.card-info {
+  position: absolute;
+  top: 7%;
+  inset-inline-start: 8%;
+  width: max(20px, calc(var(--cw) * 0.2));
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1.5px solid #fff4cf;
+  background: rgba(40, 28, 16, .82);
+  color: #fff4cf;
+  font: italic 700 max(12px, calc(var(--cw) * 0.13)) / 1 Georgia, serif;
+  z-index: 3;
+  cursor: help;
+  transition: scale var(--press) ease-out, background-color var(--press) ease-out;
+}
+.card-info::after { content: ''; position: absolute; inset: -7px; } /* easier to hit with a finger */
+.card-info:hover { background: #33261a; scale: 1.15; }
+.card.out .card-info, .table.over .card-info { display: none; }
+
+.duck-panel {
+  position: fixed;
+  width: 232px;
+  max-height: calc(100dvh - 76px);
+  overflow-y: auto;
+  padding: 10px 11px;
+  border-radius: 16px;
+  border: 2px solid #c9a24a;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .5);
+  z-index: 26;
+  animation: panel-in 140ms ease-out;
+}
+.duck-panel.calm { animation: none; }
+.duck-panel.phone { left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 50dvh; }
+.duck-panel.phone .sheet-line, .duck-panel.phone .sheet-desc { font-size: 14px; }
+@keyframes panel-in { from { opacity: 0; translate: 0 6px; } }
+.duck-panel .sheet-head { gap: 8px; margin-bottom: 6px; padding-inline-end: 24px; }
+.duck-panel .sheet-head img { width: 40px; height: 50px; }
+.duck-panel h3 { margin: 0; font-size: 15px; }
+.duck-panel .sheet-line { padding: 5px 8px; margin-bottom: 6px; font-size: 12.5px; }
+.duck-panel .sheet-line small { font-size: 10.5px; }
+.duck-panel .sheet-desc { margin-bottom: 6px; font-size: 12.5px; line-height: 1.4; }
+.duck-panel .sheet-ability { margin-bottom: 6px; padding: 5px 8px; font-size: 12px; }
+.duck-panel .sheet-caveat { margin: 0 0 6px; font-size: 10.5px; line-height: 1.3; }
+.duck-panel .sheet-actions { gap: 4px; margin-bottom: 5px; }
+.duck-panel .sheet-actions .btn { min-height: 30px; padding: 2px 4px; font-size: 14px; }
+.duck-panel:not(.phone) .mark-label { display: none; }
+.duck-panel .panel-ability { min-height: 32px; font-size: 13px; }
+.panel-ability { width: 100%; }
+.panel-close { position: absolute; top: 8px; inset-inline-end: 8px; width: 28px; height: 28px; border: 0; border-radius: 50%; background: rgba(51, 38, 26, .12); color: var(--ink); font-size: 19px; line-height: 1; cursor: pointer; }
+.panel-close:hover { background: rgba(51, 38, 26, .24); }
+
 .details-btn { margin-top: 6px; min-height: 32px; padding: 3px 10px; font-size: 13px; }
 .details-btn[hidden] { display: none; }
 

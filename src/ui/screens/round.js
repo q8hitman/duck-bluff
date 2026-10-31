@@ -4,7 +4,7 @@ import { sounds } from '../sound.js';
 import { setTension, duckMusic } from '../music.js';
 import * as fx from '../fx.js';
 import { createCardView } from '../card-view.js';
-import { ringLayout, placeBubbles } from '../ring.js';
+import { ringLayout, placeBubbles, panelSpot } from '../ring.js';
 import { boardLabel } from '../../core/board.js';
 import { referredCards } from '../../core/refs.js';
 import { getCard, impostorArt } from '../../core/cards.js';
@@ -12,6 +12,9 @@ import { generateRound, unlockedThrough } from '../../core/generator.js';
 import { createRound, flip, mark, expel, useAbility, setBusy, eurekaReady, EUREKA_NEEDS } from '../../core/round.js';
 import { forceClubFor, onRoundWon, onRunLost, onFeatherLost, roundScore, factForWin, awardBadges, ROUNDS_PER_CHAPTER } from '../../core/progress.js';
 import { t, getLang, factText, factCount, cardText, cardDesc, impostorText, statementText } from '../../i18n/i18n.js';
+
+const PEEK_DELAY = 350; // long enough that sweeping across the table opens nothing
+const PEEK_LINGER = 220; // time to reach the panel from the card
 
 export function roundScreen(root, app) {
   if (app.save.feathers <= 0) app.save = onRunLost(app.save);
@@ -29,7 +32,11 @@ export function roundScreen(root, app) {
   let aiming = false; // the expel button is armed and the player is choosing
   let focus = null; // { i, statement, ability }: the chosen duck and the line being pointed out
   let hover = null;
-  let sheet = null;
+  let panel = null; // the floating details of one duck; the game stays playable around it
+  let panelFor = null;
+  let pinned = false; // opened on purpose, so moving the pointer away doesn't close it
+  let peekTimer = 0;
+  let hideTimer = 0;
   const { layout, shown, statements, impostorTypes } = state.puzzle;
   const n = shown.length;
 
@@ -37,7 +44,7 @@ export function roundScreen(root, app) {
   const pickBar = h('div', {});
   const logEl = h('ul', { class: 'log' });
   const logEmpty = h('div', { class: 'log-empty' }, t('tapToFlip'));
-  const views = shown.map((id, i) => createCardView(i, id, onCardTap));
+  const views = shown.map((id, i) => createCardView(i, id, onCardTap, onInfoTap));
 
   const seats = [];
   const caughtEl = h('div', { class: 'table-caught', role: 'img' });
@@ -118,12 +125,13 @@ export function roundScreen(root, app) {
     });
     (phone ? tableEl.querySelector('.center-note') : tableEl).append(detailsBtn);
     renderFocus();
+    if (panel) placePanel();
   }
 
   const typeCounts = {};
   impostorTypes.forEach(type => { typeCounts[type] = (typeCounts[type] ?? 0) + 1; });
 
-  const detailsBtn = h('button', { class: 'btn small details-btn', hidden: 'hidden', onclick: () => { if (focus) openSheet(focus.i); } }, t('details'));
+  const detailsBtn = h('button', { class: 'btn small details-btn', hidden: 'hidden', onclick: () => { if (focus) showPanel(focus.i, true); } }, t('details'));
   const aimLabel = h('span', {}, t('expel'));
   const aimButton = h('button', { class: 'aim-fab', onclick: () => setAiming(!aiming) }, h('span', { class: 'aim-icon' }, '🦆💨'), aimLabel);
 
@@ -162,8 +170,16 @@ export function roundScreen(root, app) {
       if (!state.flipped[i] || aiming || picking) return;
       hover = { i, statement: baseStatement(i), ability: false };
       renderFocus();
+      clearTimeout(hideTimer);
+      clearTimeout(peekTimer);
+      if (!pinned) peekTimer = setTimeout(() => { if (hover?.i === i) showPanel(i, false); }, PEEK_DELAY);
     });
-    view.el.addEventListener('pointerleave', () => { hover = null; renderFocus(); });
+    view.el.addEventListener('pointerleave', () => {
+      hover = null;
+      renderFocus();
+      clearTimeout(peekTimer);
+      hidePanelSoon();
+    });
   });
   requestAnimationFrame(() => fx.deal(views.map(view => view.el), tableEl, () => sounds.deal()));
 
@@ -250,12 +266,17 @@ export function roundScreen(root, app) {
   // Esc backs out of whatever is open, for keyboard players.
   const onKey = e => {
     if (e.key !== 'Escape') return;
-    if (sheet) closeSheet();
+    if (panel) closePanel();
     else if (focus) setFocus(null);
     else if (aiming) setAiming(false);
     else if (picking) { picking = null; render(); }
   };
   addEventListener('keydown', onKey);
+  // A tap on the empty table puts the details away; a tap on a card switches them.
+  const onPointerDown = e => {
+    if (panel && !e.target.closest('.duck-panel, .card, .details-btn')) closePanel();
+  };
+  addEventListener('pointerdown', onPointerDown);
   // follows the table itself, so turning a phone can't leave stale sizes behind
   const tableWatch = new ResizeObserver(() => placeSeats());
   tableWatch.observe(tableEl);
@@ -292,7 +313,7 @@ export function roundScreen(root, app) {
   function setAiming(value) {
     if (value && (state.busy || state.status !== 'playing')) return;
     aiming = value;
-    if (value) { picking = null; focus = null; }
+    if (value) { picking = null; focus = null; closePanel(); }
     sounds.tap();
     document.body.classList.toggle('aiming', value);
     aimButton.classList.toggle('armed', value);
@@ -320,9 +341,20 @@ export function roundScreen(root, app) {
       fx.bob(views[i].el, i);
       return;
     }
-    if (focus?.i === i && !state.expelled[i]) return openSheet(i);
-    setFocus(i);
     sounds.tap();
+    if (state.expelled[i]) return setFocus(i);
+    if (panelFor === i && pinned) return closePanel();
+    if (panelFor === i || focus?.i === i || panel) showPanel(i, true);
+    setFocus(i);
+  }
+
+  function onInfoTap(i) {
+    if (picking || aiming || !state.flipped[i]) return onCardTap(i);
+    if (state.status !== 'playing' || state.busy) return undefined;
+    sounds.tap();
+    if (panelFor === i && pinned) return closePanel();
+    setFocus(i);
+    return showPanel(i, true);
   }
 
   function pickTarget(i) {
@@ -361,47 +393,98 @@ export function roundScreen(root, app) {
     render();
   }
 
-  function closeSheet() {
-    sheet?.remove();
-    sheet = null;
-    render();
+  function closePanel() {
+    clearTimeout(peekTimer);
+    clearTimeout(hideTimer);
+    panel?.remove();
+    panel = null;
+    panelFor = null;
+    pinned = false;
   }
 
-  function openSheet(i) {
+  function hidePanelSoon() {
+    clearTimeout(hideTimer);
+    if (panel && !pinned) hideTimer = setTimeout(closePanel, PEEK_LINGER);
+  }
+
+  function panelContent(i) {
     const id = shown[i];
     const card = getCard(id);
-    const markButton = (value, label) => h('button', {
+    const markButton = (value, icon, label) => h('button', {
       class: `btn small${state.marks[i] === value ? ' primary' : ''}`,
-      onclick: () => { state = mark(state, i, state.marks[i] === value ? null : value).state; sounds.mark(); closeSheet(); },
-    }, label);
-    sheet = h('div', { class: 'sheet-back', onclick: e => { if (e.target === sheet) closeSheet(); } },
-      h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true' },
-        h('div', { class: 'sheet-head' },
-          h('img', { src: card.portrait, alt: '' }),
-          h('div', {}, h('h3', {}, `${boardLabel(i)}. ${cardText(id).name}`))),
-        h('div', { class: 'sheet-line' }, h('small', {}, t('saysNow')), lineOf(i)),
-        h('p', { class: 'sheet-desc' }, cardDesc(id)),
-        card.ability ? h('div', { class: 'sheet-ability' }, `✋ ${cardText(id).ability}`) : null,
-        h('p', { class: 'sheet-caveat' }, t('caveat')),
-        h('div', { class: 'sheet-actions' },
-          markButton('innocent', `✅ ${t('markInnocent')}`),
-          markButton('suspect', `❓ ${t('markSuspect')}`),
-          markButton('evil', `❌ ${t('markEvil')}`)),
-        h('div', { class: 'sheet-actions' },
-          card.ability ? h('button', {
-            class: 'btn primary',
-            disabled: state.used[i],
-            onclick: () => startAbility(i),
-          }, state.used[i] ? t('abilityUsed') : t('useAbility')) : null,
-          h('button', { class: 'btn', onclick: closeSheet }, t('close')))));
-    document.body.append(sheet);
-    render();
+      title: label,
+      'aria-label': label,
+      onclick: () => {
+        state = mark(state, i, state.marks[i] === value ? null : value).state;
+        sounds.mark();
+        pinned = true;
+        render();
+        panel.replaceChildren(...panelContent(i));
+      },
+    }, icon, h('span', { class: 'mark-label' }, ` ${label}`));
+    return [
+      h('button', { class: 'panel-close', 'aria-label': t('close'), onclick: closePanel }, '×'),
+      h('div', { class: 'sheet-head' },
+        h('img', { src: card.portrait, alt: '' }),
+        h('h3', {}, `${boardLabel(i)}. ${cardText(id).name}`)),
+      h('div', { class: 'sheet-line' }, h('small', {}, t('saysNow')), lineOf(i)),
+      h('p', { class: 'sheet-desc' }, cardDesc(id)),
+      card.ability ? h('div', { class: 'sheet-ability' }, `✋ ${cardText(id).ability}`) : null,
+      h('p', { class: 'sheet-caveat' }, t('caveat')),
+      h('div', { class: 'sheet-actions' },
+        markButton('innocent', '✅', t('markInnocent')),
+        markButton('suspect', '❓', t('markSuspect')),
+        markButton('evil', '❌', t('markEvil'))),
+      card.ability ? h('button', {
+        class: 'btn primary panel-ability',
+        disabled: state.used[i],
+        onclick: () => startAbility(i),
+      }, state.used[i] ? t('abilityUsed') : t('useAbility')) : null,
+    ];
+  }
+
+  // Phones get a strip along the bottom; a big screen uses the emptiest part of the table.
+  function placePanel() {
+    const phone = innerWidth < 900;
+    panel.classList.toggle('phone', phone);
+    if (phone) { panel.style.left = panel.style.top = ''; return; }
+    const rectOf = el => {
+      const r = el.getBoundingClientRect();
+      return { l: r.left, r: r.right, t: r.top, b: r.bottom };
+    };
+    const seen = els => els.map(rectOf).filter(r => r.r > r.l);
+    const top = root.querySelector('.round-top').getBoundingClientRect().bottom + 6;
+    const spot = panelSpot({
+      size: { w: panel.offsetWidth, h: panel.offsetHeight },
+      area: { l: 8, r: innerWidth - 8, t: top, b: innerHeight - 8 },
+      target: rectOf(views[panelFor].el),
+      cards: seen(views.map(view => view.el)),
+      soft: seen([...bubbles.filter(b => !b.hidden), aimButton, detailsBtn, tableEl.querySelector('.dish')]),
+    });
+    panel.style.left = `${spot.l}px`;
+    panel.style.top = `${spot.t}px`;
+  }
+
+  function showPanel(i, pin) {
+    if (state.status !== 'playing' || state.busy || aiming || picking || !state.flipped[i] || state.expelled[i]) return;
+    clearTimeout(hideTimer);
+    if (panelFor === i) { pinned ||= pin; return; }
+    if (!pin && pinned) return;
+    panel?.remove();
+    panelFor = i;
+    pinned = pin;
+    panel = h('aside', { class: `duck-panel${reduced() ? ' calm' : ''}`, 'aria-label': cardText(shown[i]).name },
+      panelContent(i));
+    panel.addEventListener('pointerenter', () => clearTimeout(hideTimer));
+    panel.addEventListener('pointerleave', hidePanelSoon);
+    document.body.append(panel);
+    placePanel();
   }
 
   function startAbility(i) {
     const ability = getCard(shown[i]).ability;
     if (ability.kind === 'eureka' && !eurekaReady(state, i)) return toast(t('eurekaEarly', { n: EUREKA_NEEDS }));
-    closeSheet();
+    closePanel();
     if (ability.targets === 0) return applyAbility(i, []);
     setAiming(false);
     picking = { i, ability, chosen: [] };
@@ -409,7 +492,7 @@ export function roundScreen(root, app) {
   }
 
   async function doExpel(i) {
-    closeSheet();
+    closePanel();
     if (state.busy || state.status !== 'playing' || state.expelled[i]) return;
     state = setBusy(state, true);
     const seatEl = views[i].el.parentElement;
@@ -478,6 +561,8 @@ export function roundScreen(root, app) {
   }
 
   function finish() {
+    closePanel();
+    tableEl.classList.add('over');
     // show the whole truth, including who was scrambled
     state.truth.cards.forEach((slot, i) => {
       if (!state.flipped[i]) views[i].el.classList.add('flipped');
@@ -537,5 +622,5 @@ export function roundScreen(root, app) {
     setTimeout(() => { if (root.isConnected) document.body.append(resultEl); }, reduced() ? 0 : 1000);
   }
 
-  return () => { removeEventListener('keydown', onKey); tableWatch.disconnect(); sheet?.remove(); aimButton.remove(); document.body.classList.remove('aiming'); fx.killAll(root); };
+  return () => { removeEventListener('keydown', onKey); tableWatch.disconnect(); removeEventListener('pointerdown', onPointerDown); closePanel(); aimButton.remove(); document.body.classList.remove('aiming'); fx.killAll(root); };
 }

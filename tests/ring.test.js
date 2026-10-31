@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ringLayout, placeBubbles, CARD_RATIO } from '../src/ui/ring.js';
+import { ringLayout, placeBubbles, panelSpot, CARD_RATIO } from '../src/ui/ring.js';
 
 const PHONE = { aspect: 4.6 / 3, maxCard: 0.28, maxRx: 0.46, maxRy: 0.7, centerW: 0.42, centerH: 0.55 };
 const DESKTOP = { aspect: 9 / 16, maxCard: 0.125, maxRx: 0.33, maxRy: 0.4, centerW: 0.19, centerH: 0.3 };
@@ -74,4 +74,21 @@ test('a bubble with no free side reports it', () => {
   const size = { w: 128, h: 50 };
   assert.equal(placeBubbles({ cards: [card], sizes: [size], preferred: ['top'], blocks: [wall], width: 1000, height: 600 })[0].clear, false);
   assert.equal(placeBubbles({ cards: [card], sizes: [size], preferred: ['top'], blocks: [], width: 1000, height: 600 })[0].clear, true);
+});
+
+test('the details panel takes an empty spot and never covers its own duck', () => {
+  const cards = [{ l: 400, r: 500, t: 40, b: 180 }, { l: 700, r: 800, t: 200, b: 340 }, { l: 400, r: 500, t: 500, b: 640 }, { l: 100, r: 200, t: 200, b: 340 }];
+  const size = { w: 310, h: 300 };
+  const area = { l: 8, r: 1100, t: 10, b: 700 };
+  const spot = panelSpot({ size, area, target: cards[1], cards });
+  const rect = { l: spot.l, r: spot.l + size.w, t: spot.t, b: spot.t + size.h };
+  for (const c of cards) assert.ok(apart(rect, c, 0), JSON.stringify(rect));
+  assert.ok(rect.l >= area.l && rect.r <= area.r && rect.t >= area.t && rect.b <= area.b);
+});
+
+test('a crowded table still leaves the described duck in view', () => {
+  const target = { l: 60, r: 160, t: 60, b: 200 };
+  const size = { w: 310, h: 400 };
+  const spot = panelSpot({ size, area: { l: 0, r: 700, t: 0, b: 500 }, target, cards: [target, { l: 300, r: 700, t: 0, b: 500 }] });
+  assert.ok(apart({ l: spot.l, r: spot.l + size.w, t: spot.t, b: spot.t + size.h }, target, 0));
 });

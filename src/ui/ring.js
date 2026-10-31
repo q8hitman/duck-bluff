@@ -80,6 +80,25 @@ export function placeBubbles({ cards, sizes, preferred, blocks, width, height, g
   return result;
 }
 
+// The emptiest place for a floating panel, in pixels. It never prefers covering the duck
+// it describes, then avoids the other cards, then `soft` things, and stays close by.
+export function panelSpot({ size, area, target, cards, soft = [], step = 16 }) {
+  const midX = (target.l + target.r) / 2;
+  const midY = (target.t + target.b) / 2;
+  let best = null;
+  for (let t = area.t; t <= Math.max(area.t, area.b - size.h); t += step) {
+    for (let l = area.l; l <= Math.max(area.l, area.r - size.w); l += step) {
+      const rect = { l, t, r: l + size.w, b: t + size.h };
+      const covered = hits(rect, target) * 1000
+        + cards.reduce((sum, c) => sum + hits(rect, c), 0) * 20
+        + soft.reduce((sum, c) => sum + hits(rect, c), 0) * 5;
+      const score = covered + Math.hypot(l + size.w / 2 - midX, t + size.h / 2 - midY);
+      if (!best || score < best.score) best = { l, t, score };
+    }
+  }
+  return { l: best.l, t: best.t };
+}
+
 // All sizes are fractions of the table width; aspect is table height / width.
 // Returned x and y are fractions of the table's width and height.
 export function ringLayout({ n, aspect, maxCard, maxRx, maxRy, centerW, centerH }) {

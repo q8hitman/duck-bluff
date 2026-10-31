@@ -2,18 +2,19 @@
 import { h } from './motion.js';
 import { boardLabel } from '../core/board.js';
 import { getCard, frameOf, impostorArt } from '../core/cards.js';
-import { cardText } from '../i18n/i18n.js';
+import { cardText, t } from '../i18n/i18n.js';
 
 const MARK_ICON = { innocent: '✅', suspect: '❓', evil: '❌' };
 
-export function createCardView(i, shownId, onTap) {
+export function createCardView(i, shownId, onTap, onInfo) {
   const card = getCard(shownId);
   const portrait = h('img', { class: 'card-art', src: card.portrait, alt: '', draggable: 'false' });
   const frame = h('img', { class: 'card-frame', src: frameOf(shownId), alt: '', draggable: 'false' });
   const nameEl = h('div', { class: 'card-name' }, h('span', {}, cardText(shownId).name));
   const mark = h('span', { class: 'card-mark' });
   const tag = h('span', { class: 'card-tag', hidden: 'hidden' });
-  const face = h('div', { class: 'card-side card-face' }, portrait, frame, nameEl, tag,
+  const info = h('span', { class: 'card-info', title: t('details'), onclick: e => { e.stopPropagation(); onInfo(i); } }, 'i');
+  const face = h('div', { class: 'card-side card-face' }, portrait, frame, nameEl, tag, info,
     card.ability ? h('span', { class: 'card-power' }, '✋') : shownId === 'volatile' ? h('span', { class: 'card-power' }, '💥') : shownId === 'lucky' ? h('span', { class: 'card-power' }, '🍀') : null, mark);
   const back = h('div', { class: 'card-side card-back' }, h('img', { src: 'assets/ui/card-back.webp', alt: '', draggable: 'false' }));
   const el = h('button', {
