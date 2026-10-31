@@ -433,7 +433,7 @@ export function roundScreen(root, app) {
         sounds.mark();
         pinned = true;
         render();
-        panel.replaceChildren(...panelContent(i));
+        panel.replaceChildren(...panelContent(i).filter(Boolean)); // unlike h(), this would print a null
       },
     }, icon, h('span', { class: 'mark-label' }, ` ${label}`));
     return [
@@ -597,8 +597,6 @@ export function roundScreen(root, app) {
       } else if (slot.corrupted) views[i].showTag('🌀', true);
     });
 
-    const seen = new Set(app.save.seen);
-    state.truth.cards.forEach(slot => seen.add(slot.evil ? slot.impostorType : slot.realId));
     const clubIds = state.truth.cards.filter(c => !c.evil && getCard(c.realId).group === 'club').map(c => c.realId);
     const won = state.status === 'won';
     const allCards = views.map(view => view.el);
@@ -613,7 +611,7 @@ export function roundScreen(root, app) {
     const gained = won ? roundScore(state) : 0;
     let newlyUnlocked = [];
     if (won) {
-      const next = onRoundWon({ ...app.save, seen: [...seen] }, { clubIds, feathers: state.feathers, score: gained });
+      const next = onRoundWon(app.save, { clubIds, feathers: state.feathers, score: gained });
       app.save = next.save;
       newlyUnlocked = next.newlyUnlocked;
       const hadAbilities = shown.some(id => getCard(id).ability);
@@ -622,7 +620,7 @@ export function roundScreen(root, app) {
       awarded.fresh.forEach((id, n) => setTimeout(() => { toast(t('newBadge', { name: t(`badge_${id}`) })); sounds.badge(); }, 900 + n * 1100));
       if (newlyUnlocked.length || (app.save.chapter === 'endless' && save.chapter !== 'endless')) sounds.fanfare();
     } else {
-      app.save = onRunLost({ ...app.save, seen: [...seen] });
+      app.save = onRunLost(app.save);
     }
     app.persist();
 

@@ -17,7 +17,6 @@ export function defaultSave() {
     roundInChapter: 1,
     feathers: 3,
     unlocked: idsOfChapter(1),
-    seen: [],
     recentClub: [],
     chapterClubSeen: [],
     nextSeed: 1,
@@ -62,11 +61,6 @@ export function createProgress(storage = safeStorage()) {
 export function roundScore(state) {
   const unused = state.puzzle.shown.filter((id, i) => getCard(id).ability && !state.used[i]).length;
   return 100 + state.feathers * 30 + unused * 25;
-}
-
-// Everything is known once the chapters are done, even ducks that never showed up.
-export function albumSeen(save) {
-  return new Set(save.endlessOpen ? all.map(c => c.id) : save.seen);
 }
 
 export const BADGES = ['firstWin', 'flawless', 'clutch', 'pure', 'graduate', 'streak5', 'streak10', 'score5000'];

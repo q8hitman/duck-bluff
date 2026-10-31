@@ -59,7 +59,6 @@
 .album-card:active { transform: scale(.97); }
 .album-card img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: top; }
 .album-card span { display: block; padding: 4px; font-weight: 600; }
-.album-card.locked img { filter: brightness(0) opacity(.28); }
 
 .intro-list { display: grid; gap: 10px; margin-bottom: 16px; }
 

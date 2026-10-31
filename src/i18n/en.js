@@ -142,7 +142,6 @@ export default {
     pendingReveal: 'Ahmad will reveal duck {target} after your next correct expel',
     expelledEvil: 'Correct! It was a {type} 🎭',
     expelledInnocent: 'Oops… that one was innocent',
-    unknownCard: 'Locked card',
     seenCount: '{n} of {total}',
     howToText: 'Every card you flip says a line. Innocent ducks tell the truth, impostors lie, and a scrambled duck 🌀 is innocent but says something false. Club members have an ability ✋ you can use once per round. Expel every impostor before your feathers run out.',
     rules: 'Good to know: cards sit in a circle numbered clockwise, and each has two neighbors, the one before and the one after; the first and last are neighbors. Numbers in a line are card numbers. A count includes the duck speaking if its number is listed. The real Abdullah can\u2019t be scrambled, nor can the neighbors of the real Rawan, and a saboteur scrambles one duck beside it. You get 3 feathers each round, and expelling the innocent Risky Duck costs them all. An honest Chatterbox has exactly one true claim; a lying one has none.',

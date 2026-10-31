@@ -2,7 +2,7 @@
 import { h } from '../motion.js';
 import * as fx from '../fx.js';
 import { CARDS, IMPOSTORS, getCard, impostorArt } from '../../core/cards.js';
-import { startChapter, resumeRun, albumSeen, BADGES, DEFAULT_MUSIC_VOLUME } from '../../core/progress.js';
+import { startChapter, resumeRun, BADGES, DEFAULT_MUSIC_VOLUME } from '../../core/progress.js';
 import { setMusicVolume } from '../music.js';
 import { t, cardText, cardDesc, impostorText } from '../../i18n/i18n.js';
 
@@ -77,7 +77,6 @@ export function introScreen(root, app, { ids }) {
 }
 
 export function albumScreen(root, app) {
-  const seen = albumSeen(app.save);
   const have = app.save.badges ?? [];
   const show = (id, img, name) => {
     const ability = getCard(id)?.ability ? cardText(id).ability : null;
@@ -89,11 +88,11 @@ export function albumScreen(root, app) {
         h('button', { class: 'btn primary', style: 'width:100%', onclick: () => back.remove() }, t('close'))));
     document.body.append(back);
   };
-  const tile = (id, img, name) => h('button', { class: `album-card${seen.has(id) ? '' : ' locked'}`, onclick: () => { if (seen.has(id)) show(id, img, name); } },
+  const tile = (id, img, name) => h('button', { class: 'album-card', onclick: () => show(id, img, name) },
     h('img', { src: img, alt: '' }),
-    h('span', {}, seen.has(id) ? name : t('unknownCard')));
+    h('span', {}, name));
   const group = (title, items) => h('section', { class: 'album-group' },
-    h('h3', {}, `${title} (${t('seenCount', { n: items.filter(x => seen.has(x.id)).length, total: items.length })})`),
+    h('h3', {}, `${title} (${items.length})`),
     h('div', { class: 'album-grid' }, items.map(x => tile(x.id, x.img, x.name))));
   const cards = CARDS.map(c => ({ id: c.id, img: c.portrait, name: cardText(c.id).name, group: c.group }));
   root.append(topBar(app, t('album')),
