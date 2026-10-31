@@ -17,6 +17,7 @@ export default {
     muaili: 'قلبه أكبر من معطفه، وإبهامه مرفوع قبل لا تخلص كلامك. يشجعك على كل شي، بس ما يصدق إلا النتيجة. يقول إن وحدة على الأقل من بطتين بريئة.',
     turki: 'شكله شرير، قهوته شريرة، وحتى نظارته تحتقرك. بس هو مو شرير، غشمرته بس وزنها طن. يتنمر عليك وهو يضحك، وإذا سكت عنك فهذا اللي يخوف. يأشر على المتنكر بكل برود ويكمل قهوته.',
     kiraz: 'مهندسة الاحتمالات. تفكك أي نظام لين تلقى نقطة ضعفه، بس لازم تفهمه أول. تقارن عدد المتنكرين بين نصفي الطاولة.',
+    hamada: 'صيدلي، وكاريزمته تحتاج وصفة طبية. تدش تشتري بنادول وتطلع معترف بأشياء سويتها أيام الروضة. السماعات على راسه بس محد يدري شيسمع، لأنه ما يبطل كلام. يضمن لك إن بطة معينة بريئة.',
     hora: 'تخلط وتقارن. تقول عن بطتين إذا الثنتين بريئات أو الثنتين متنكرات، أو وحدة بريئة ووحدة متنكرة.',
     ritaj: 'تقول إذا جارتيها صادقات، أو بينهم وحدة كذابة. الكذابة ممكن تكون متنكرة أو مخربطة.',
 
@@ -79,6 +80,7 @@ export default {
     muaili: 'His heart is bigger than his lab coat, and his thumb is up before you finish talking. He cheers you on through anything, but only trusts results. Says at least one of two ducks is innocent.',
     turki: 'He looks evil, his coffee looks evil, even his monocle judges you. He is not evil; his jokes just weigh a ton. He roasts you while laughing, and if he goes quiet, that is when to worry. Points at an impostor without looking up from his cup.',
     kiraz: 'The Architect of Possibilities. Takes any system apart until she finds its weak point, but she has to understand it first. Compares impostors in the two halves of the table.',
+    hamada: 'A pharmacist whose charisma should require a prescription. You walk in for a painkiller and leave having confessed to things you did in kindergarten. Nobody knows what his headphones play, because he never stops talking. Vouches that one duck is innocent.',
     hora: 'Mixes and compares. Says whether two ducks are both innocent or both impostors, or one of each.',
     ritaj: 'Says whether her two neighbors are truthful, or one of them lies. A liar is an impostor or scrambled.',
 

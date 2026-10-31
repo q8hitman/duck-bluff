@@ -136,6 +136,16 @@ export const STATEMENT_KINDS = {
     evaluate: (w, i, p) => (evil(w, p.a) || evil(w, p.b)) === p.has,
     answer: (w, i, [a, b]) => ({ a, b, has: evil(w, a) || evil(w, b) }),
   },
+  // One duck breaks at most: with two impostors chosen, the other keeps quiet.
+  confession: {
+    evaluate: (w, i, p) => (p.confessed === null ? !evil(w, p.a) && !evil(w, p.b) : evil(w, p.confessed)),
+    answer: (w, i, [a, b]) => ({ a, b, confessed: [a, b].find(t => evil(w, t)) ?? null }),
+    lie: (w, p) => {
+      if (p.confessed === null) return { ...p, confessed: p.a };
+      const other = p.confessed === p.a ? p.b : p.a;
+      return { ...p, confessed: evil(w, other) ? null : other };
+    },
+  },
   oneOfTwoInnocent: {
     evaluate: (w, i, p) => !evil(w, p.a) || !evil(w, p.b),
     candidates: (w, i) => pairs(others(w, i)).map(([a, b]) => ({ a, b })),

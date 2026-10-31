@@ -508,6 +508,7 @@ export function roundScreen(root, app) {
   function startAbility(i) {
     const ability = getCard(shown[i]).ability;
     if (ability.kind === 'eureka' && !eurekaReady(state, i)) return toast(t('eurekaEarly', { n: EUREKA_NEEDS }));
+    if (ability.kind === 'confession' && !eurekaReady(state, i)) return toast(t('confessionEarly', { n: EUREKA_NEEDS }));
     closePanel();
     if (ability.targets === 0) return applyAbility(i, []);
     setAiming(false);

@@ -3,7 +3,7 @@
 export const TIER_POINTS = { legendary: 4, strong: 3, medium: 2, weak: 1, flavor: 1 };
 
 // Portraits on a clean background.
-const CLEAN_ART = ['zahraa', 'ritaj', 'camel', 'abdullah', 'ahmad', 'rawan', 'shouq', 'loujain', 'fayzah', 'bassam', 'ali', 'ruaa', 'motivator', 'dawoud', 'hora', 'muaili', 'kiraz', 'turki'];
+const CLEAN_ART = ['zahraa', 'ritaj', 'camel', 'abdullah', 'ahmad', 'rawan', 'shouq', 'loujain', 'fayzah', 'bassam', 'ali', 'ruaa', 'motivator', 'dawoud', 'hora', 'muaili', 'kiraz', 'turki', 'hamada'];
 
 const club = (id, chapter, kind, ability, targets, extra = {}) => ({
   id, group: 'club', tier: id === 'abdullah' ? 'legendary' : 'strong', chapter, kind,
@@ -37,6 +37,7 @@ export const CARDS = [
   club('ritaj', 4, 'neighborsTruthful', 'statementTrue', 1),
   club('hora', 4, 'sameTeam', 'oneOfThree', 3),
   club('kiraz', 4, 'halvesCompare', 'eureka', 0),
+  club('hamada', 4, 'nameInnocent', 'confession', 2),
 
   guest('lab', 'weak', 1, 'neighborHasEvil'),
   guest('guard', 'weak', 1, 'prevInnocent'),

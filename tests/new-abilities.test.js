@@ -69,3 +69,33 @@ test('heavy teasing covers the chosen duck and both its neighbors, and a liar ge
     }
   }
 });
+
+test('a confession waits for an audience', () => {
+  let s = round([slot('hamada'), slot('camel'), evilSlot(), slot('ali'), slot('bassam')], ['hamada', 'camel', 'lab', 'ali', 'bassam']);
+  s = flip(s, 0).state;
+  for (let j = 1; j < EUREKA_NEEDS; j++) s = flip(s, j).state;
+  assert.equal(useAbility(s, 0, [1, 2]).events.length, 0);
+  s = flip(s, EUREKA_NEEDS).state;
+  assert.equal(useAbility(s, 0, [1, 2]).events[0].type, 'answer');
+});
+
+test('only one duck confesses, and a liar always gets it wrong', () => {
+  const shown = ['hamada', 'lab', 'lab', 'ali', 'bassam', 'camel'];
+  const cards = lying => [lying ? slot('hamada', { corrupted: true }) : slot('hamada'), evilSlot(), evilSlot(), slot('ali'), slot('bassam'), slot('camel')];
+  for (const [targets, truth] of [[[1, 2], 1], [[3, 1], 1], [[1, 3], 1], [[3, 4], null]]) {
+    const honest = flipAll(round(cards(false), shown));
+    const said = useAbility(honest, 0, targets).state.clues[0].statement;
+    assert.equal(said.params.confessed, truth);
+    assert.equal(evaluate(honest.truth, 0, said), true);
+    const lying = flipAll(round(cards(true), shown));
+    const lie = useAbility(lying, 0, targets).state.clues[0].statement;
+    assert.notEqual(lie.params.confessed, truth);
+    assert.equal(evaluate(lying.truth, 0, lie), false);
+  }
+});
+
+test('an expelled impostor cannot take the confession from a live one', () => {
+  let s = flipAll(round([slot('hamada'), evilSlot(), evilSlot(), slot('ali'), slot('bassam')], ['hamada', 'lab', 'lab', 'ali', 'bassam']));
+  s = { ...s, expelled: [false, true, false, false, false] };
+  assert.equal(useAbility(s, 0, [1, 2]).state.clues[0].statement.params.confessed, 2);
+});

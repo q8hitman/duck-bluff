@@ -16,6 +16,7 @@ export default {
     muaili: { name: 'Muaili', ability: 'Experiment: pick 2 ducks to learn exactly how many impostors they include' },
     turki: { name: 'Turki', ability: 'Heavy Teasing: pick a duck; he roasts it and its neighbors until someone cracks, and tells you if an impostor is among them' },
     kiraz: { name: 'Keraz', ability: 'Eureka: once 3 other cards are flipped, she names 2 ducks with an impostor between them' },
+    hamada: { name: 'Hamada', ability: 'Confession Dose: once 3 other cards are flipped, pick 2 ducks for him to talk to. An impostor among them confesses; if both are impostors, only one does' },
     hora: { name: 'Hora', ability: 'Reaction: pick 3 cards to learn if any is an impostor' },
     ritaj: { name: 'Dr. Ritaj', ability: 'Memory: pick a card to learn if its line is true' },
 
@@ -134,6 +135,7 @@ export default {
     toMenu: 'Menu',
     newDucks: 'New ducks joined!',
     eurekaEarly: 'Keraz must understand the system first: flip {n} other cards',
+    confessionEarly: 'Hamada never talks without an audience: flip {n} other cards',
     shieldArmed: 'Hype is on! Your next wrong expel costs no feather',
     shieldWorked: 'Hype saved you! No feather lost 💪',
     shieldFailed: 'The Hype was fake! You lost a feather',

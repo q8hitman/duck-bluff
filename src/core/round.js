@@ -8,7 +8,8 @@ import { chooseStatement } from './generator.js';
 
 const noop = state => ({ state, events: [] });
 
-// Eureka needs a look at the system first: this many other cards flipped.
+// Eureka needs a look at the system first, and a confession needs an audience:
+// this many other cards flipped.
 export const EUREKA_NEEDS = 3;
 export const eurekaReady = (state, i) => state.flipped.filter((up, j) => up && j !== i).length >= EUREKA_NEEDS;
 
@@ -88,6 +89,10 @@ export function useAbility(state, i, targets) {
     const used = [...state.used];
     used[i] = true;
     return { state: { ...state, used, clues: [...state.clues, { from: i, statement }] }, events: [{ type: 'answer', i, targets: [], statement }] };
+  }
+  if (ability.kind === 'confession') {
+    if (!eurekaReady(state, i)) return noop(state);
+    targets = [...targets].sort((a, b) => state.expelled[a] - state.expelled[b]); // an expelled duck has nothing left to confess
   }
   const used = [...state.used];
   used[i] = true;
