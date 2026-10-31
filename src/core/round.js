@@ -126,12 +126,17 @@ export function expel(state, i) {
     s.pending = [];
   } else {
     events.push({ type: 'expelledInnocent', i });
-    if (s.shield) {
+    if (slot.realId === 'volatile') {
+      featherLost = true;
+      s.feathers = 0;
+      s.shield = null;
+      events.push({ type: 'blast', i }, { type: 'featherLost', left: 0 });
+    } else if (s.shield) {
       events.push({ type: 'shield', works: s.shield.works });
       featherLost = !s.shield.works;
       s.shield = null;
     } else featherLost = true;
-    if (featherLost) {
+    if (featherLost && s.feathers > 0) {
       s.feathers--;
       events.push({ type: 'featherLost', left: s.feathers });
     }

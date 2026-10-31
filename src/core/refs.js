@@ -23,6 +23,8 @@ function collect(layout, i, { kind, params: p }) {
   }
 }
 
+export const countedCards = (layout, i, statement) => [...new Set(collect(layout, i, statement))];
+
 export function referredCards(layout, i, statement) {
   return [...new Set(collect(layout, i, statement))].filter(j => j !== i);
 }

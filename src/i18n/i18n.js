@@ -2,6 +2,8 @@
 import ar from './ar.js';
 import en from './en.js';
 import descriptions from './descriptions.js';
+import { makeLayout, boardLabel, opposite } from '../core/board.js';
+import { countedCards } from '../core/refs.js';
 
 const LANGS = { ar, en };
 let lang = 'ar';
@@ -20,136 +22,131 @@ export function t(key, vars = {}) {
 
 const cardsAway = n => (n === 1 ? 'كرت واحد' : n === 2 ? 'كرتين' : `${n} كروت`);
 
-const AR = (c, count, cmp, imp) => ({
-  isInnocent: p => (p.is ? `${c(p.target)} بريئة` : `${c(p.target)} متنكرة`),
-  nameInnocent: p => `${c(p.target)} بريئة 🪶`,
-  nameEvil: p => `سمعت إن ${c(p.target)} متنكرة`,
-  revealIdentity: p => (p.evil ? `${c(p.target)} هي ${imp(p.impostorType)}` : `${c(p.target)} بريئة`),
-  rowEvilCount: p => `في جهتي ${count(p.n)}`,
-  rowEvilCountOf: p => `في الجهة ${p.row + 1} ${count(p.n)}`,
-  neighborEvilCount: p => `بين جيراني ${count(p.n)}`,
-  neighborEvilCountOf: p => `جنب ${c(p.target)} ${count(p.n)}`,
+// Every line spells out card numbers, so nobody has to work out who "my neighbors" are.
+const AR = {
+  isInnocent: (p, x) => `${x.c(p.target)} ${p.is ? 'بريئة' : 'متنكرة'}`,
+  nameInnocent: (p, x) => `${x.c(p.target)} بريئة`,
+  nameEvil: (p, x) => `${x.c(p.target)} متنكرة`,
+  revealIdentity: (p, x) => (p.evil ? `${x.c(p.target)} هي ${x.imp(p.impostorType)}` : `${x.c(p.target)} بريئة`),
+  rowEvilCount: (p, x) => `بين ${x.who}: ${x.count(p.n)}`,
+  rowEvilCountOf: (p, x) => `بين ${x.who}: ${x.count(p.n)}`,
+  neighborEvilCount: (p, x) => `بين ${x.who}: ${x.count(p.n)}`,
+  neighborEvilCountOf: (p, x) => `جنب ${x.c(p.target)} (${x.whoRest}): ${x.count(p.n)}`,
   nearestEvil: p => `أقرب متنكر لي يبعد ${cardsAway(p.n)}`,
-  nearestEvilFrom: p => (p.n === 0 ? `ما في متنكر قريب من ${c(p.target)}` : `أقرب متنكر من ${c(p.target)} يبعد ${cardsAway(p.n)}`),
-  sideCompare: p => `المتنكرين قبلي ${cmp[p.cmp]} بعدي`,
-  halvesCompare: p => `النص الأول ${cmp[p.cmp]} الثاني بالمتنكرين`,
-  oneOfThree: p => `${p.has ? 'بين' : 'ما في متنكر بين'} ${p.targets.map(x => x + 1).join(' و')}${p.has ? ' متنكر' : ''}`,
-  oneOfTwoInnocent: p => `${c(p.a)} أو ${c(p.b)} بريئة`,
-  sameTeam: p => `${c(p.a)} و${c(p.b)} ${p.same ? 'من نفس الفريق' : 'مو من نفس الفريق'}`,
-  isCorrupted: p => `${c(p.target)} ${p.is ? 'مخربطة 🌀' : 'مو مخربطة'}`,
-  claimIsReal: p => `${c(p.target)} ${p.is ? 'هي اللي تدّعيه' : 'مو اللي تدّعيه'}`,
-  statementTrue: p => `جملة ${c(p.target)} ${p.is ? 'صح' : 'غلط'}`,
-  statementFalse: p => `جملة ${c(p.target)} ${p.is ? 'غلط' : 'صح'}`,
-  saboteurAdjacent: p => `${p.has ? 'فيه' : 'ما فيه'} مخرّب جنب ${c(p.target)}`,
-  neighborsClean: () => 'ما أحد خرّب جيراني',
-  neighborsTruthful: p => (p.truthful ? 'جيراني صادقين' : 'جيراني فيهم كذاب'),
-  neighborHasEvil: p => (p.has ? 'فيه متنكر جنبي' : 'ما في متنكر جنبي'),
-  selfAndNeighborsHaveEvil: p => (p.has ? 'أنا وجيراني فينا متنكر' : 'أنا وجيراني ما فينا متنكر'),
-  prevInnocent: () => 'البطة اللي قبلي بريئة',
-  prevTruthful: () => 'البطة اللي قبلي تقول الصدق',
-  nextIs: p => `البطة اللي بعدي ${p.evil ? 'متنكرة' : 'بريئة'}`,
-  lastIs: p => `آخر بطة بالطاولة ${p.evil ? 'متنكرة' : 'بريئة'}`,
-  rowHasEvil: p => `الجهة ${p.row + 1} فيها متنكر`,
-  cornerHasEvil: p => (p.has ? 'أول كرت بجهة متنكر' : 'أوائل الجهات أبرياء'),
+  nearestEvilFrom: (p, x) => (p.n === 0 ? `ما فيه متنكر غير ${x.c(p.target)}` : `أقرب متنكر من ${x.c(p.target)} يبعد ${cardsAway(p.n)}`),
+  sideCompare: (p, x) => `عدد المتنكرين من ${x.below} ${x.cmp[p.cmp]} اللي من ${x.above}`,
+  halvesCompare: (p, x) => `عدد المتنكرين من ${x.half1} ${x.cmp[p.cmp]} اللي من ${x.half2}`,
+  oneOfThree: (p, x) => (p.has ? `بين ${x.who} فيه متنكر` : `ما فيه متنكر بين ${x.who}`),
+  oneOfTwoInnocent: (p, x) => `على الأقل وحدة من ${x.who} بريئة`,
+  sameTeam: (p, x) => `${x.c(p.a)} و${x.c(p.b)} ${p.same ? 'من نفس الفريق' : 'من فريقين مختلفين'}`,
+  isCorrupted: (p, x) => (p.is ? `${x.c(p.target)} مخربطة 🌀: بريئة بس كلامها غلط` : `${x.c(p.target)} مو مخربطة`),
+  claimIsReal: (p, x) => `${x.c(p.target)} ${p.is ? 'حقيقية' : 'مزيفة'}`,
+  statementTrue: (p, x) => `كلام ${x.c(p.target)} ${p.is ? 'صح' : 'غلط'}`,
+  statementFalse: (p, x) => `كلام ${x.c(p.target)} ${p.is ? 'غلط' : 'صح'}`,
+  saboteurAdjacent: (p, x) => `${p.has ? 'فيه' : 'ما فيه'} مخرّب جنب ${x.c(p.target)}`,
+  neighborsClean: (p, x) => `ما أحد خرّب ${x.who}`,
+  neighborsTruthful: (p, x) => (p.truthful ? `${x.who} صادقين` : `بين ${x.who} فيه كذاب`),
+  neighborHasEvil: (p, x) => (p.has ? `بين ${x.who} فيه متنكر` : `ما فيه متنكر بين ${x.who}`),
+  selfAndNeighborsHaveEvil: (p, x) => (p.has ? `أنا و${x.who}: فينا متنكر` : `أنا و${x.who}: ما فينا متنكر`),
+  prevInnocent: (p, x) => `${x.c(x.prev)} (اللي قبلي) بريئة`,
+  prevTruthful: (p, x) => `كلام ${x.c(x.prev)} (اللي قبلي) صح`,
+  nextIs: (p, x) => `${x.c(x.next)} (اللي بعدي) ${p.evil ? 'متنكرة' : 'بريئة'}`,
+  lastIs: (p, x) => `${x.c(x.last)} (الأخيرة) ${p.evil ? 'متنكرة' : 'بريئة'}`,
+  rowHasEvil: (p, x) => `بين ${x.who} فيه متنكر`,
+  cornerHasEvil: (p, x) => (p.has ? `بين ${x.who} فيه متنكر` : `ما فيه متنكر بين ${x.who}`),
   evilParity: p => `مجموع أرقام المتنكرين ${p.even ? 'زوجي' : 'فردي'}`,
-  twinInnocent: p => `توأمي ${c(p.target)}، وهي بريئة`,
-  selfAndTargetInnocent: p => `أنا بريئة، و${c(p.target)} بريئة بعد 😎`,
-  oppositeInnocent: () => 'البطة اللي مقابلي بريئة',
-  otherNeighborIs: p => `${c(p.target)} ${p.evil ? 'متنكرة' : 'بريئة'}`,
-  twoClaims: p => `وحدة بس صح: ${statementText(p.first)} / ${statementText(p.second)}`,
-  randomTargeted: p => statementText(p.inner),
-});
+  twinInnocent: (p, x) => `توأمي ${x.c(p.target)}، وهي بريئة`,
+  selfAndTargetInnocent: (p, x) => `أنا بريئة، و${x.c(p.target)} بريئة بعد`,
+  oppositeInnocent: (p, x) => `${x.c(x.opposite)} (اللي مقابلي) بريئة`,
+  otherNeighborIs: (p, x) => `${x.c(p.target)} ${p.evil ? 'متنكرة' : 'بريئة'}`,
+  twoClaims: (p, x) => `وحدة بس صح: ${x.say(p.first)} / ${x.say(p.second)}`,
+  randomTargeted: (p, x) => x.say(p.inner),
+};
 
-const EN = (c, count, cmp, imp) => ({
-  isInnocent: p => `${c(p.target)} is ${p.is ? 'innocent' : 'an impostor'}`,
-  nameInnocent: p => `${c(p.target)} is innocent 🪶`,
-  nameEvil: p => `I heard ${c(p.target)} is an impostor`,
-  revealIdentity: p => (p.evil ? `${c(p.target)} is the ${imp(p.impostorType)}` : `${c(p.target)} is innocent`),
-  rowEvilCount: p => `My side has ${count(p.n)}`,
-  rowEvilCountOf: p => `Side ${p.row + 1} has ${count(p.n)}`,
-  neighborEvilCount: p => `My neighbors include ${count(p.n)}`,
-  neighborEvilCountOf: p => `Next to ${c(p.target)}: ${count(p.n)}`,
-  nearestEvil: p => `The nearest impostor is ${p.n} card(s) away`,
-  nearestEvilFrom: p => (p.n === 0 ? `No impostor near ${c(p.target)}` : `The nearest impostor to ${c(p.target)} is ${p.n} card(s) away`),
-  sideCompare: p => `Impostors numbered below me: ${cmp[p.cmp]} numbered above me`,
-  halvesCompare: p => `The first half of the table has ${cmp[p.cmp]} the second half in impostors`,
-  oneOfThree: p => `${p.has ? 'At least one' : 'None'} of ducks ${p.targets.map(x => x + 1).join(', ')} ${p.has ? 'is an impostor' : 'are impostors'}`,
-  oneOfTwoInnocent: p => `At least one of ${c(p.a)} and ${c(p.b)} is innocent`,
-  sameTeam: p => `${c(p.a)} and ${c(p.b)} are ${p.same ? 'on the same team' : 'on different teams'}`,
-  isCorrupted: p => `${c(p.target)} is ${p.is ? 'scrambled 🌀' : 'not scrambled'}`,
-  claimIsReal: p => `${c(p.target)} ${p.is ? 'is who it claims' : 'is not who it claims'}`,
-  statementTrue: p => `The line of ${c(p.target)} is ${p.is ? 'true' : 'false'}`,
-  statementFalse: p => `The line of ${c(p.target)} is ${p.is ? 'false' : 'true'}`,
-  saboteurAdjacent: p => `${p.has ? 'A saboteur sits' : 'No saboteur sits'} next to ${c(p.target)}`,
-  neighborsClean: () => 'Nobody scrambled my neighbors',
-  neighborsTruthful: p => (p.truthful ? 'My neighbors are truthful' : 'One of my neighbors lies'),
-  neighborHasEvil: p => (p.has ? 'An impostor sits next to me' : 'No impostor sits next to me'),
-  selfAndNeighborsHaveEvil: p => (p.has ? 'Among me and my neighbors is an impostor' : 'No impostor among me and my neighbors'),
-  prevInnocent: () => 'The duck before me is innocent',
-  prevTruthful: () => 'The duck before me tells the truth',
-  nextIs: p => `The duck after me is ${p.evil ? 'an impostor' : 'innocent'}`,
-  lastIs: p => `The last duck on the table is ${p.evil ? 'an impostor' : 'innocent'}`,
-  rowHasEvil: p => `Side ${p.row + 1} has at least one impostor`,
-  cornerHasEvil: p => (p.has ? 'An impostor is the first card of a side' : 'No impostor is the first card of a side'),
+const EN = {
+  isInnocent: (p, x) => `${x.c(p.target)} is ${p.is ? 'innocent' : 'an impostor'}`,
+  nameInnocent: (p, x) => `${x.c(p.target)} is innocent`,
+  nameEvil: (p, x) => `${x.c(p.target)} is an impostor`,
+  revealIdentity: (p, x) => (p.evil ? `${x.c(p.target)} is the ${x.imp(p.impostorType)}` : `${x.c(p.target)} is innocent`),
+  rowEvilCount: (p, x) => `Among ${x.who}: ${x.count(p.n)}`,
+  rowEvilCountOf: (p, x) => `Among ${x.who}: ${x.count(p.n)}`,
+  neighborEvilCount: (p, x) => `Among ${x.who}: ${x.count(p.n)}`,
+  neighborEvilCountOf: (p, x) => `Beside ${x.c(p.target)} (${x.whoRest}): ${x.count(p.n)}`,
+  nearestEvil: p => `The nearest impostor to me is ${p.n} card(s) away`,
+  nearestEvilFrom: (p, x) => (p.n === 0 ? `No impostor other than ${x.c(p.target)}` : `The nearest impostor to ${x.c(p.target)} is ${p.n} card(s) away`),
+  sideCompare: (p, x) => `Impostors in ${x.below}: ${x.cmp[p.cmp]} in ${x.above}`,
+  halvesCompare: (p, x) => `Impostors in ${x.half1}: ${x.cmp[p.cmp]} in ${x.half2}`,
+  oneOfThree: (p, x) => (p.has ? `An impostor is among ${x.who}` : `No impostor among ${x.who}`),
+  oneOfTwoInnocent: (p, x) => `At least one of ${x.who} is innocent`,
+  sameTeam: (p, x) => `${x.c(p.a)} and ${x.c(p.b)} are ${p.same ? 'on the same team' : 'on different teams'}`,
+  isCorrupted: (p, x) => (p.is ? `${x.c(p.target)} is scrambled 🌀: innocent, but saying something false` : `${x.c(p.target)} is not scrambled`),
+  claimIsReal: (p, x) => `${x.c(p.target)} is ${p.is ? 'real' : 'a fake'}`,
+  statementTrue: (p, x) => `What ${x.c(p.target)} says is ${p.is ? 'true' : 'false'}`,
+  statementFalse: (p, x) => `What ${x.c(p.target)} says is ${p.is ? 'false' : 'true'}`,
+  saboteurAdjacent: (p, x) => `${p.has ? 'A saboteur is' : 'No saboteur is'} next to ${x.c(p.target)}`,
+  neighborsClean: (p, x) => `Nobody scrambled ${x.who}`,
+  neighborsTruthful: (p, x) => (p.truthful ? `${x.who} tell the truth` : `One of ${x.who} lies`),
+  neighborHasEvil: (p, x) => (p.has ? `An impostor is among ${x.who}` : `No impostor among ${x.who}`),
+  selfAndNeighborsHaveEvil: (p, x) => (p.has ? `Me and ${x.who}: one of us is an impostor` : `Me and ${x.who}: no impostor among us`),
+  prevInnocent: (p, x) => `${x.c(x.prev)} (before me) is innocent`,
+  prevTruthful: (p, x) => `What ${x.c(x.prev)} (before me) says is true`,
+  nextIs: (p, x) => `${x.c(x.next)} (after me) is ${p.evil ? 'an impostor' : 'innocent'}`,
+  lastIs: (p, x) => `${x.c(x.last)} (the last) is ${p.evil ? 'an impostor' : 'innocent'}`,
+  rowHasEvil: (p, x) => `An impostor is among ${x.who}`,
+  cornerHasEvil: (p, x) => (p.has ? `An impostor is among ${x.who}` : `No impostor among ${x.who}`),
   evilParity: p => `The impostor numbers add up to an ${p.even ? 'even' : 'odd'} number`,
-  twinInnocent: p => `My twin is ${c(p.target)}, and she is innocent`,
-  selfAndTargetInnocent: p => `I am innocent, and so is ${c(p.target)} 😎`,
-  oppositeInnocent: () => 'The duck opposite me is innocent',
-  otherNeighborIs: p => `${c(p.target)} is ${p.evil ? 'an impostor' : 'innocent'}`,
-  twoClaims: p => `Exactly one is true: ${statementText(p.first)} / ${statementText(p.second)}`,
-  randomTargeted: p => statementText(p.inner),
-});
+  twinInnocent: (p, x) => `My twin is ${x.c(p.target)}, and she is innocent`,
+  selfAndTargetInnocent: (p, x) => `I am innocent, and so is ${x.c(p.target)}`,
+  oppositeInnocent: (p, x) => `${x.c(x.opposite)} (opposite me) is innocent`,
+  otherNeighborIs: (p, x) => `${x.c(p.target)} is ${p.evil ? 'an impostor' : 'innocent'}`,
+  twoClaims: (p, x) => `Exactly one is true: ${x.say(p.first)} / ${x.say(p.second)}`,
+  randomTargeted: (p, x) => x.say(p.inner),
+};
 
-// Light ducks say their clue in their own voice.
-const VOICE_AR = (c, count, cmp) => ({
-  visitor: p => (p.has ? 'شفت متنكر جنبي 👀' : 'ما شفت متنكر جنبي 👀'),
-  cafeteria: p => `${c(p.target)} أكلت كرواساني، متنكرة! 🥐`,
-  sleepy: () => 'زززز… اللي قبلي بريئة 😴',
-  photographer: p => `صورت ${c(p.target)}: بريئة 📸`,
-  newbie: p => `اللي بعدي ${p.evil ? 'متنكرة' : 'بريئة'}!`,
-  attendance: p => `بالكشف: الجهة ${p.row + 1} فيها متنكر ✍️`,
-  late: p => `آخر بطة ${p.evil ? 'متنكرة' : 'بريئة'} 🚗`,
-  snap: p => `${c(p.a)} و${c(p.b)}: ${p.same ? 'نفس الفريق' : 'مو نفس الفريق'} 🤳`,
-  homework: p => `مجموع أرقامهم ${p.even ? 'زوجي' : 'فردي'} 📚`,
-  breakTime: p => `${c(p.a)} أو ${c(p.b)} بريئة ☕`,
-  hyped: p => (p.truthful ? 'جيراني صادقين!! 🎉' : 'جيراني فيهم كذاب!! 🎉'),
-  plants: () => 'اللي مقابلي بريئة 🌱',
-  lost: p => (p.has ? 'أول كرت بجهة متنكر 🗺️' : 'أوائل الجهات أبرياء 🗺️'),
-  graduate: p => `في جهتي ${count(p.n)} 🎓`,
-  wifi: p => `أقرب متنكر يبعد ${cardsAway(p.n)} 📶`,
-  microwave: () => 'اللي قبلي صادقة ⏲️',
-  cameraOff: p => `بين جيراني ${count(p.n)} 🙈`,
-  organizer: p => `النص الأول ${cmp[p.cmp]} الثاني 🗂️`,
-});
+// Light ducks keep their personality: an emoji, or a line of their own.
+const EMOJI = {
+  visitor: '👀', sleepy: '😴', newbie: '🎒', attendance: '✍️', late: '🚗', snap: '🤳', homework: '📚',
+  breakTime: '☕', hyped: '🎉', plants: '🌱', lost: '🗺️', graduate: '🎓', wifi: '📶', microwave: '⏲️',
+  cameraOff: '🙈', organizer: '🗂️', volatile: '⚠️',
+};
+const VOICE = {
+  ar: {
+    cafeteria: (p, x) => `${x.c(p.target)} أكلت كرواساني، متنكرة! 🥐`,
+    photographer: (p, x) => `صورت ${x.c(p.target)}: بريئة 📸`,
+  },
+  en: {
+    cafeteria: (p, x) => `${x.c(p.target)} ate my croissant: an impostor! 🥐`,
+    photographer: (p, x) => `I filmed ${x.c(p.target)}: innocent 📸`,
+  },
+};
 
-const VOICE_EN = (c, count, cmp) => ({
-  visitor: p => (p.has ? 'Just visiting… and I saw an impostor next to me 👀' : 'Just visiting… and no impostor is next to me 👀'),
-  cafeteria: p => `${c(p.target)} ate my croissant, must be an impostor! 🥐`,
-  sleepy: () => 'Zzzz… the duck before me is innocent, let me sleep 😴',
-  photographer: p => `I filmed ${c(p.target)} all day: innocent 📸`,
-  newbie: p => `My first day! The duck after me is ${p.evil ? 'an impostor' : 'innocent'}`,
-  attendance: p => `The attendance sheet says Side ${p.row + 1} has at least one impostor ✍️`,
-  late: p => `I arrived late and saw the last duck: ${p.evil ? 'an impostor' : 'innocent'} 🚗`,
-  snap: p => `My story shows ${c(p.a)} and ${c(p.b)} ${p.same ? 'on the same team' : 'on different teams'} 🤳`,
-  homework: p => `Homework done: the impostor numbers add up to an ${p.even ? 'even' : 'odd'} number 📚`,
-  breakTime: p => `On break with ${c(p.a)} and ${c(p.b)}: at least one is innocent ☕`,
-  hyped: p => (p.truthful ? 'My neighbors are truthful!! Let\u2019s go 🎉' : 'One of my neighbors lies!! Catch them 🎉'),
-  plants: () => 'The duck opposite me waters my plant: innocent 🌱',
-  lost: p => (p.has ? 'I got lost and found an impostor as the first card of a side 🗺️' : 'I got lost everywhere: no impostor is the first card of a side 🗺️'),
-  graduate: p => `Before I graduate: my side has ${count(p.n)} 🎓`,
-  wifi: p => `The signal says the nearest impostor is ${p.n} card(s) away 📶`,
-  microwave: () => 'The duck before me in the microwave line tells the truth ⏲️',
-  cameraOff: p => `Camera off, but I can hear: my neighbors include ${count(p.n)} 🙈`,
-  organizer: p => `Files sorted: the first half has ${cmp[p.cmp]} the second in impostors 🗂️`,
-});
+const span = (a, b, L) => (a > b ? L.st.none : a === b ? String(a) : L.st.range(a, b));
 
-export function statementText(statement, speakerId = null) {
+// ctx = { self: card index of the speaker, layout }.
+export function statementText(statement, speakerId = null, ctx = null) {
   const L = LANGS[lang];
-  if (speakerId) {
-    const voice = (lang === 'ar' ? VOICE_AR : VOICE_EN)(L.st.c, L.st.count, L.st.cmp)[speakerId];
-    if (voice) return voice(statement.params);
-  }
-  const imp = id => L.impostors[id].name;
-  const table = (lang === 'ar' ? AR : EN)(L.st.c, L.st.count, L.st.cmp, imp);
-  return table[statement.kind](statement.params);
+  const { self, layout } = ctx ?? { self: 0, layout: makeLayout(6) };
+  const n = layout.count;
+  const counted = countedCards(layout, self, statement).map(boardLabel).sort((a, b) => a - b);
+  const x = {
+    c: L.st.c,
+    count: L.st.count,
+    cmp: L.st.cmp,
+    imp: id => L.impostors[id].name,
+    who: L.st.list(counted),
+    whoRest: L.st.list(countedCards(layout, self, statement).slice(1).map(boardLabel).sort((a, b) => a - b)),
+    prev: (self - 1 + n) % n,
+    next: (self + 1) % n,
+    last: n - 1,
+    opposite: opposite(layout, self),
+    below: span(1, boardLabel(self) - 1, L),
+    above: span(boardLabel(self) + 1, n, L),
+    half1: span(1, Math.floor(n / 2), L),
+    half2: span(Math.ceil(n / 2) + 1, n, L),
+    say: inner => statementText(inner, null, { self, layout }),
+  };
+  const voice = VOICE[lang][speakerId];
+  if (voice) return voice(statement.params, x);
+  const line = (lang === 'ar' ? AR : EN)[statement.kind](statement.params, x);
+  return EMOJI[speakerId] ? `${line} ${EMOJI[speakerId]}` : line;
 }

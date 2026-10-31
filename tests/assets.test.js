@@ -17,5 +17,5 @@ test('impostor art, frames and table exist', () => {
 
 test('guests use the new art except the two not drawn yet', () => {
   const drawn = CARDS.filter(c => c.group === 'guest' && c.portrait.endsWith('.svg')).map(c => c.id).sort();
-  assert.deepEqual(drawn, ['cameraOff', 'hyped']);
+  assert.deepEqual(drawn, ['cameraOff', 'hyped', 'volatile']);
 });

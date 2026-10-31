@@ -36,13 +36,6 @@ test('after chapter 4 comes endless', () => {
   assert.equal(s.chapter, 'endless');
 });
 
-test('losing a run resets feathers and the chapter round', () => {
-  const s = onRunLost({ ...defaultSave(), chapter: 2, roundInChapter: 3, feathers: 0 });
-  assert.equal(s.feathers, 3);
-  assert.equal(s.chapter, 2);
-  assert.equal(s.roundInChapter, 1);
-});
-
 test('rotation: last round forces club members not seen this chapter', () => {
   let s = defaultSave();
   s = onRoundWon(s, { clubIds: ['bassam', 'camel'] }).save;
@@ -50,11 +43,6 @@ test('rotation: last round forces club members not seen this chapter', () => {
   s = { ...s, roundInChapter: ROUNDS_PER_CHAPTER };
   const forced = forceClubFor(s);
   assert.ok(forced.includes('ali') && !forced.includes('bassam'));
-});
-
-test('feathers carry over between rounds of a run', () => {
-  const s = onRoundWon(defaultSave(), { clubIds: [], feathers: 1 }).save;
-  assert.equal(s.feathers, 1);
 });
 
 test('reaching endless keeps it open after replaying an old chapter', () => {

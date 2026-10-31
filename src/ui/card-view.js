@@ -14,7 +14,7 @@ export function createCardView(i, shownId, onTap) {
   const mark = h('span', { class: 'card-mark' });
   const tag = h('span', { class: 'card-tag', hidden: 'hidden' });
   const face = h('div', { class: 'card-side card-face' }, portrait, frame, nameEl, tag,
-    card.ability ? h('span', { class: 'card-power' }, '✋') : null, mark);
+    card.ability ? h('span', { class: 'card-power' }, '✋') : shownId === 'volatile' ? h('span', { class: 'card-power' }, '💥') : null, mark);
   const back = h('div', { class: 'card-side card-back' }, h('img', { src: 'assets/ui/card-back.webp', alt: '', draggable: 'false' }));
   const el = h('button', {
     class: `card ${card.group}${shownId === 'abdullah' ? ' legend' : ''}`,

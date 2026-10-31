@@ -10,9 +10,7 @@ import { getCard, impostorArt } from '../../core/cards.js';
 import { generateRound, unlockedThrough } from '../../core/generator.js';
 import { createRound, flip, mark, expel, useAbility, setBusy } from '../../core/round.js';
 import { forceClubFor, onRoundWon, onRunLost, onFeatherLost, roundScore, ROUNDS_PER_CHAPTER } from '../../core/progress.js';
-import { t, cardText, cardDesc, impostorText, statementText } from '../../i18n/i18n.js';
-
-const SIDE_COLORS = ['#8d6bb0', '#3f8aa6', '#c9688f', '#5f8f55'];
+import { t, getLang, cardText, cardDesc, impostorText, statementText } from '../../i18n/i18n.js';
 
 export function roundScreen(root, app) {
   if (app.save.feathers <= 0) app.save = onRunLost(app.save);
@@ -55,7 +53,7 @@ export function roundScreen(root, app) {
     bubbles[i] = h('div', { class: 'bubble', hidden: 'hidden' });
     return h('div', {
       class: `seat ${side}`,
-      style: `--cos:${cos.toFixed(4)};--sin:${sin.toFixed(4)};--arc:${SIDE_COLORS[layout.rowOf[i] % SIDE_COLORS.length]}`,
+      style: `--cos:${cos.toFixed(4)};--sin:${sin.toFixed(4)}`,
     }, views[i].el, bubbles[i]);
   }
 
@@ -63,13 +61,11 @@ export function roundScreen(root, app) {
   impostorTypes.forEach(type => { typeCounts[type] = (typeCounts[type] ?? 0) + 1; });
 
   const detailsBtn = h('button', { class: 'btn small details-btn', hidden: 'hidden', onclick: () => { if (focus) openSheet(focus.i); } }, t('details'));
-  const linesEl = h('div', { class: 'ref-lines' });
   const aimLabel = h('span', {}, t('expel'));
   const aimButton = h('button', { class: 'aim-fab', onclick: () => setAiming(!aiming) }, h('span', { class: 'aim-icon' }, '🦆💨'), aimLabel);
 
   const tableEl = h('div', { class: `table size-${sizeClass}`, onclick: e => { if (e.target === tableEl) setFocus(null); } },
     h('div', { class: 'table-center' }, h('img', { src: 'assets/ui/table-center.svg', alt: '' }), caughtEl, centerLine, detailsBtn),
-    linesEl,
     shown.map((_, i) => seat(i)),
     aimButton);
 
@@ -106,9 +102,9 @@ export function roundScreen(root, app) {
   requestAnimationFrame(() => fx.deal(views.map(view => view.el), tableEl, () => sounds.deal()));
 
   function lineOf(i) {
-    if (statements[i]) return statementText(statements[i], shown[i]);
+    if (statements[i]) return statementText(statements[i], shown[i], { self: i, layout });
     const clue = state.clues.find(c => c.from === i && !isAbilityClue(c));
-    return clue ? statementText(clue.statement) : t('waitingLine');
+    return clue ? statementText(clue.statement, null, { self: i, layout }) : t('waitingLine');
   }
 
   function isAbilityClue(clue) {
@@ -149,7 +145,7 @@ export function roundScreen(root, app) {
     const rowPick = picking.ability.kind === 'rowEvilCountOf';
     pickBar.append(h('div', { class: 'pick-bar', style: 'margin-bottom:8px' },
       h('span', { class: 'grow' }, rowPick ? t('chooseRow') : t('chooseTargets', { n: picking.ability.targets })),
-      rowPick ? layout.rows.map((_, r) => h('button', { class: 'btn small side-btn', style: `--arc:${SIDE_COLORS[r % SIDE_COLORS.length]}`, onclick: () => applyAbility(picking.i, [r]) }, t('row', { n: r + 1 }))) : null,
+      rowPick ? layout.rows.map((_, r) => h('button', { class: 'btn small', onclick: () => applyAbility(picking.i, [r]) }, t('row', { n: layout.rows[r].map(boardLabel).join(getLang() === 'ar' ? ' و' : ', ') }))) : null,
       h('button', { class: 'btn small', onclick: () => { picking = null; render(); } }, t('cancel'))));
   }
 
@@ -159,7 +155,7 @@ export function roundScreen(root, app) {
       if (!state.flipped[i]) return;
       items.push(logItem(i, lineOf(i), false));
     });
-    state.clues.filter(isAbilityClue).forEach(c => items.push(logItem(c.from, statementText(c.statement), true, c.statement)));
+    state.clues.filter(isAbilityClue).forEach(c => items.push(logItem(c.from, statementText(c.statement, null, { self: c.from, layout }), true, c.statement)));
     logEl.replaceChildren(...items);
     logEmpty.hidden = items.length > 0;
   }
@@ -171,7 +167,7 @@ export function roundScreen(root, app) {
       if (tableEl.getBoundingClientRect().top < 0) tableEl.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth' });
     };
     return h('li', { class: `log-item${ability ? ' ability' : ''}${state.expelled[i] ? ' gone' : ''}`, onclick: open },
-      h('span', { class: 'log-thumb', style: `--arc:${SIDE_COLORS[layout.rowOf[i] % SIDE_COLORS.length]}` },
+      h('span', { class: 'log-thumb' },
         h('img', { src: getCard(shown[i]).portrait, alt: '' }),
         h('span', { class: 'log-num' }, String(boardLabel(i)))),
       h('span', {}, h('span', { class: 'log-who' }, `${cardText(shown[i]).name}${ability ? ' ✋' : ''}: `), text));
@@ -206,31 +202,16 @@ export function roundScreen(root, app) {
       view.el.classList.toggle('ref', refs.includes(i));
     });
     tableEl?.classList.toggle('focusing', refs.length > 0);
-    linesEl?.replaceChildren(...lines(active, refs));
 
     const shownFocus = focus && !aiming && state.status === 'playing' ? focus : null;
     centerLine.classList.toggle('hint', !shownFocus);
     centerLine.textContent = shownFocus
-      ? `${boardLabel(shownFocus.i)}. ${shownFocus.ability ? statementText(shownFocus.statement) : lineOf(shownFocus.i)}`
+      ? `${boardLabel(shownFocus.i)}. ${shownFocus.ability ? statementText(shownFocus.statement, null, { self: shownFocus.i, layout }) : lineOf(shownFocus.i)}`
       : t(state.flipped.every(Boolean) ? 'tipExpel' : 'tapToFlip');
     detailsBtn.hidden = !shownFocus || state.expelled[shownFocus.i];
   }
 
-  function lines(active, refs) {
-    if (!active || !tableEl) return [];
-    const box = tableEl.getBoundingClientRect();
-    const at = i => {
-      const r = views[i].el.getBoundingClientRect();
-      return [r.left + r.width / 2 - box.left, r.top + r.height / 2 - box.top];
-    };
-    const [x1, y1] = at(active.i);
-    return refs.map(j => {
-      const [x2, y2] = at(j);
-      const length = Math.hypot(x2 - x1, y2 - y1);
-      const angle = Math.atan2(y2 - y1, x2 - x1);
-      return h('div', { class: 'ref-line', style: `left:${x1.toFixed(1)}px;top:${y1.toFixed(1)}px;width:${length.toFixed(1)}px;rotate:${angle.toFixed(4)}rad` });
-    });
-  }
+  const isRisky = i => state.truth.cards[i].realId === 'volatile';
 
   function setAiming(value) {
     if (value && (state.busy || state.status !== 'playing')) return;
@@ -296,7 +277,7 @@ export function roundScreen(root, app) {
   function apply(result) {
     state = result.state;
     for (const e of result.events) {
-      if (e.type === 'answer') { toast(`${cardText(shown[e.i]).name}: ${statementText(e.statement)}`); setFocus(e.i, e.statement, true); }
+      if (e.type === 'answer') { toast(`${cardText(shown[e.i]).name}: ${statementText(e.statement, null, { self: e.i, layout })}`); setFocus(e.i, e.statement, true); }
       if (e.type === 'shieldArmed') toast(t('shieldArmed'));
       if (e.type === 'pending') toast(t('pendingReveal', { target: boardLabel(e.target) }));
       if (e.type === 'shield') toast(t(e.works ? 'shieldWorked' : 'shieldFailed'), !e.works);
@@ -378,15 +359,20 @@ export function roundScreen(root, app) {
         toast(t('expelledEvil', { type: impostorText(e.impostorType).name }));
         sounds.good();
       }
+      if (e.type === 'blast') {
+        toast(t('blast'), true);
+        fx.shake(tableEl, 1);
+        fx.burst(view.el, { count: 26, colors: ['#ff6a2b', '#ffc93c', '#fbf1d8'], spread: 190 });
+      }
       if (e.type === 'expelledInnocent') {
         view.el.classList.add('innocent-out');
         view.showTag(t('markInnocent'), true);
         fx.revealInnocent(view.el, tableEl);
-        fx.react(view.el, t('reactInnocent'));
+        fx.react(view.el, t(isRisky(e.i) ? 'reactBlast' : 'reactInnocent'));
         toast(t('expelledInnocent'), true);
         sounds.bad();
       }
-      if (e.type === 'answer') { toast(`${cardText(shown[e.i]).name}: ${statementText(e.statement)}`); setFocus(e.i, e.statement, true); }
+      if (e.type === 'answer') { toast(`${cardText(shown[e.i]).name}: ${statementText(e.statement, null, { self: e.i, layout })}`); setFocus(e.i, e.statement, true); }
       if (e.type === 'shield') toast(t(e.works ? 'shieldWorked' : 'shieldFailed'), !e.works);
       if (e.type === 'scrambleFound') {
         views[e.i].showTag('🌀', true);

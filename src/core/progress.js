@@ -3,6 +3,7 @@ import { CARDS, IMPOSTORS, getCard } from './cards.js';
 
 const KEY = 'bsc-duck-save';
 export const ROUNDS_PER_CHAPTER = 4;
+const ROUND_FEATHERS = 3;
 const all = [...CARDS, ...IMPOSTORS];
 const idsOfChapter = n => all.filter(c => c.chapter === n).map(c => c.id);
 const clubIds = () => CARDS.filter(c => c.group === 'club').map(c => c.id);
@@ -60,8 +61,8 @@ export function roundScore(state) {
   return 100 + state.feathers * 30 + unused * 25;
 }
 
-export function onRoundWon(save, { clubIds: played, feathers = save.feathers, score = 0 }) {
-  const s = { ...save, feathers, score: (save.score ?? 0) + score, recentClub: [...played], chapterClubSeen: [...new Set([...save.chapterClubSeen, ...played])], nextSeed: save.nextSeed + 1 };
+export function onRoundWon(save, { clubIds: played, score = 0 }) {
+  const s = { ...save, feathers: ROUND_FEATHERS, score: (save.score ?? 0) + score, recentClub: [...played], chapterClubSeen: [...new Set([...save.chapterClubSeen, ...played])], nextSeed: save.nextSeed + 1 };
   if (s.chapter === 'endless') return { save: s, newlyUnlocked: [] };
   if (s.roundInChapter < ROUNDS_PER_CHAPTER) return { save: { ...s, roundInChapter: s.roundInChapter + 1 }, newlyUnlocked: [] };
   if (s.resume) return { save: resumeRun(s), newlyUnlocked: [] };
@@ -75,7 +76,7 @@ export function onRoundWon(save, { clubIds: played, feathers = save.feathers, sc
 }
 
 export function onRunLost(save) {
-  return { ...save, feathers: 3, roundInChapter: 1, chapterClubSeen: [], nextSeed: save.nextSeed + 1 };
+  return { ...save, feathers: ROUND_FEATHERS, nextSeed: save.nextSeed + 1 };
 }
 
 // Saved at once, with a new table next time, so leaving a round can't undo a mistake.
