@@ -10,7 +10,7 @@ import { referredCards } from '../../core/refs.js';
 import { getCard, impostorArt } from '../../core/cards.js';
 import { generateRound, unlockedThrough } from '../../core/generator.js';
 import { createRound, flip, mark, expel, useAbility, setBusy } from '../../core/round.js';
-import { forceClubFor, onRoundWon, onRunLost, onFeatherLost, roundScore, factForWin, ROUNDS_PER_CHAPTER } from '../../core/progress.js';
+import { forceClubFor, onRoundWon, onRunLost, onFeatherLost, roundScore, factForWin, awardBadges, ROUNDS_PER_CHAPTER } from '../../core/progress.js';
 import { t, getLang, factText, factCount, cardText, cardDesc, impostorText, statementText } from '../../i18n/i18n.js';
 
 export function roundScreen(root, app) {
@@ -40,7 +40,6 @@ export function roundScreen(root, app) {
   const views = shown.map((id, i) => createCardView(i, id, onCardTap));
 
   const seats = [];
-  const restSides = [];
   const caughtEl = h('div', { class: 'table-caught', role: 'img' });
   const centerLine = h('div', { class: 'center-line' });
   const bubbles = [];
@@ -52,70 +51,73 @@ export function roundScreen(root, app) {
     return seats[i];
   }
 
-  // Cards never touch: positions and size come from the table's real shape.
+  // Every bubble's real size, as if all the cards were already flipped.
+  function bubbleSizes() {
+    const probe = h('div', { class: 'bubble', style: 'visibility:hidden' });
+    tableEl.append(probe);
+    const sizes = shown.map((_, i) => {
+      probe.textContent = lineOf(i);
+      return { w: probe.offsetWidth, h: Math.max(probe.offsetHeight, statements[i] ? 0 : 48) };
+    });
+    probe.remove();
+    return sizes;
+  }
+
+  // Ducks at the top and bottom speak toward the middle, where there is room.
+  const restSide = (p, reach) => {
+    const ny = (p.y - 0.5) / reach;
+    return ny < -0.7 ? 'top' : ny > 0.7 ? 'bottom' : p.x > 0.5 ? 'right' : 'left';
+  };
+
+  // Cards never touch, and on a big screen they shrink until every line has its own
+  // space. Sides stay fixed for the whole round, so bubbles never jump around.
   function placeSeats() {
     const box = tableEl.getBoundingClientRect();
     if (!box.width) return;
     const phone = innerWidth < 900;
     const dish = tableEl.querySelector('.dish').getBoundingClientRect();
-    const { card, points } = ringLayout({
+    const shape = {
       n,
       aspect: box.height / box.width,
-      maxCard: phone ? 0.28 : 0.13,
-      maxRx: phone ? 0.46 : 0.34,
+      maxRx: phone ? 0.46 : 0.43,
       maxRy: phone ? 0.5 : 0.41,
       centerW: (dish.width + 8) / box.width,
       centerH: (dish.height + (phone ? 80 : 44)) / box.width,
-    });
+    };
+    const layoutFor = maxCard => {
+      const layout = ringLayout({ ...shape, maxCard });
+      const reach = Math.max(...layout.points.map(p => Math.abs(p.y - 0.5)));
+      return { ...layout, sides: layout.points.map(p => restSide(p, reach)) };
+    };
+    let chosen = layoutFor(phone ? 0.28 : 0.13);
+    if (!phone) {
+      const sizes = bubbleSizes();
+      const middle = { l: dish.left - box.left, r: dish.right - box.left, t: dish.top - box.top, b: dish.bottom - box.top + 34 };
+      const aim = aimButton.getBoundingClientRect();
+      const blocks = [
+        middle,
+        { l: aim.left - box.left, r: aim.right - box.left, t: aim.top - box.top, b: aim.bottom - box.top },
+        { l: 0, r: 150, t: box.height - 54, b: box.height }, // the details button's corner
+      ];
+      for (let maxCard = 0.13; maxCard >= 0.07; maxCard -= 0.005) {
+        const layout = layoutFor(maxCard);
+        const w = layout.card * box.width;
+        const cards = layout.points.map(p => ({ l: p.x * box.width - w / 2, r: p.x * box.width + w / 2, t: p.y * box.height - w * 0.7, b: p.y * box.height + w * 0.7 }));
+        const places = placeBubbles({ cards, sizes, preferred: layout.sides, blocks, width: box.width, height: box.height, above: Math.max(26, w * 0.28) * 0.42 + 8 });
+        chosen = { ...layout, sides: places.map(place => place.side) };
+        if (places.every(place => place.clear)) break;
+      }
+    }
+    const { card, points, sides } = chosen;
     tableEl.style.setProperty('--cw', `${(card * box.width).toFixed(1)}px`);
     views.forEach(view => view.sizeName(card * box.width));
-    const reach = Math.max(...points.map(p => Math.abs(p.y - 0.5)));
     points.forEach((p, i) => {
-      const ny = (p.y - 0.5) / reach;
-      // ducks at the top and bottom speak toward the middle, where there is room
-      const side = ny < -0.7 ? 'top' : ny > 0.7 ? 'bottom' : p.x > 0.5 ? 'right' : 'left';
-      restSides[i] = side;
+      seats[i].classList.remove('top', 'bottom', 'left', 'right');
+      seats[i].classList.add(sides[i]);
       seats[i].style.cssText = `left:${(p.x * 100).toFixed(2)}%;top:${(p.y * 100).toFixed(2)}%;width:${(card * 100).toFixed(2)}%`;
     });
     (phone ? tableEl.querySelector('.center-note') : tableEl).append(detailsBtn);
     renderFocus();
-  }
-
-  // Each bubble takes the first side that is clear of everything else on the table.
-  function arrangeBubbles() {
-    const phone = innerWidth < 900;
-    const box = tableEl.getBoundingClientRect();
-    const inTable = el => {
-      const r = el.getBoundingClientRect();
-      return { l: r.left - box.left, r: r.right - box.left, t: r.top - box.top, b: r.bottom - box.top };
-    };
-    const setSide = (i, side) => {
-      seats[i].classList.remove('top', 'bottom', 'left', 'right');
-      seats[i].classList.add(side);
-    };
-    if (phone) return restSides.forEach((side, i) => setSide(i, side));
-    const dish = inTable(tableEl.querySelector('.dish'));
-    const number = Math.max(26, parseFloat(tableEl.style.getPropertyValue('--cw')) * 0.28);
-    const active = hover ?? focus;
-    const places = placeBubbles({
-      cards: seats.map(inTable),
-      sizes: bubbles.map(b => (b.hidden ? null : { w: b.offsetWidth, h: b.offsetHeight })),
-      preferred: restSides,
-      blocks: [
-        { ...dish, b: dish.b + 34 }, // the hint under the dish
-        inTable(aimButton),
-        { l: 0, r: 150, t: box.height - 54, b: box.height }, // the details button's corner
-      ],
-      width: box.width,
-      height: box.height,
-      first: active ? active.i : null,
-      above: number * 0.42 + 8,
-    });
-    places.forEach(({ side, clear }, i) => {
-      setSide(i, side);
-      bubbles[i].classList.toggle('crowded', !clear && active?.i !== i);
-      bubbles[i].classList.toggle('active', active?.i === i);
-    });
   }
 
   const typeCounts = {};
@@ -137,7 +139,7 @@ export function roundScreen(root, app) {
       h('button', { class: 'btn small', onclick: () => app.go('menu') }, t('back')),
       h('div', { class: 'round-title' },
         h('strong', {}, t(`chapter${save.chapter}`)),
-        save.chapter === 'endless' ? null : t('roundOf', { n: save.roundInChapter, total: ROUNDS_PER_CHAPTER })),
+        save.chapter === 'endless' ? t('streak', { n: save.streak ?? 0 }) : t('roundOf', { n: save.roundInChapter, total: ROUNDS_PER_CHAPTER })),
       h('div', { class: 'types' }, h('span', { class: 'types-label' }, t('impostorsHere')),
         Object.entries(typeCounts).map(([type, n]) => h('button', {
           class: 'chip',
@@ -283,7 +285,6 @@ export function roundScreen(root, app) {
       ? `${boardLabel(shownFocus.i)}. ${shownFocus.ability ? statementText(shownFocus.statement, null, { self: shownFocus.i, layout }) : lineOf(shownFocus.i)}`
       : t(state.flipped.every(Boolean) ? 'tipExpel' : 'tapToFlip');
     detailsBtn.hidden = !shownFocus || state.expelled[shownFocus.i];
-    arrangeBubbles();
   }
 
   const isRisky = i => state.truth.cards[i].realId === 'volatile';
@@ -504,6 +505,11 @@ export function roundScreen(root, app) {
       const next = onRoundWon({ ...app.save, seen: [...seen] }, { clubIds, feathers: state.feathers, score: gained });
       app.save = next.save;
       newlyUnlocked = next.newlyUnlocked;
+      const hadAbilities = shown.some(id => getCard(id).ability);
+      const awarded = awardBadges(app.save, { feathers: state.feathers, hadAbilities, usedAbility: state.used.some(Boolean) });
+      app.save = awarded.save;
+      awarded.fresh.forEach((id, n) => setTimeout(() => { toast(t('newBadge', { name: t(`badge_${id}`) })); sounds.badge(); }, 900 + n * 1100));
+      if (newlyUnlocked.length || (app.save.chapter === 'endless' && save.chapter !== 'endless')) sounds.fanfare();
     } else {
       app.save = onRunLost({ ...app.save, seen: [...seen] });
     }

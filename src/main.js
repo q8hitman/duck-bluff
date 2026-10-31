@@ -39,7 +39,7 @@ const app = {
       if (mine !== token) return;
     }
     cleanup?.();
-    setMood(name === 'round' ? 'table' : 'menu');
+    setMood(name === 'round' ? `chapter${app.save.chapter}` : 'menu');
     const screen = h('div', { class: 'screen' });
     host.replaceChildren(screen);
     current = screen;

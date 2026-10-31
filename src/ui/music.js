@@ -1,11 +1,16 @@
-// Plays our own soundtrack (assets/music): each mood has a playlist that moves to the
-// next track with a soft overlap, and crossfades between the menu and the table.
+// Plays our own soundtrack (assets/music): each part of the game has its own playlist
+// that moves to the next track with a soft overlap, and crossfades between parts.
 import { audio } from './sound.js';
 
 const music = name => `assets/music/${name}.mp3`;
 const TRACKS = {
-  menu: ['pixel-menu', 'pixel-funk'].map(music),
-  table: ['pixel-mystery', 'groove', 'midnight', 'pixel-funk'].map(music),
+  menu: ['morning', 'khaleeji'].map(music),
+  chapter1: ['firstday', 'morning'].map(music),
+  chapter2: ['detective', 'firstday'].map(music),
+  chapter3: ['hauntedlab', 'detective'].map(music),
+  chapter4: ['finale', 'hauntedlab'].map(music),
+  chapterendless: ['khaleeji', 'finale', 'hauntedlab', 'detective', 'firstday', 'morning'].map(music),
+  lastfeather: ['lastfeather'].map(music),
 };
 const VOLUME = 0.5;
 const OVERLAP = 3; // seconds the end of a track overlaps the next start
@@ -19,7 +24,7 @@ let tension = false;
 let playing = null; // { name, gain, sources, timer }
 let beatTimer = null;
 const buffers = {};
-const turn = { menu: 0, table: 0 };
+const turn = Object.fromEntries(Object.keys(TRACKS).map(name => [name, 0]));
 
 async function load(url) {
   const ctx = audio();
@@ -32,6 +37,13 @@ const nextUrl = name => {
   return list[turn[name]++ % list.length];
 };
 const peekUrl = name => TRACKS[name][turn[name] % TRACKS[name].length];
+
+// A decoded track is large, so a phone only holds the ones about to play.
+function keepOnly(...urls) {
+  for (const url of Object.keys(buffers)) {
+    if (!urls.includes(url)) delete buffers[url];
+  }
+}
 
 function ensureGraph(ctx) {
   if (master) return;
@@ -72,6 +84,7 @@ function scheduleTrack(track, buffer, at) {
   source.start(at);
   track.sources = [...track.sources.slice(-1), source];
   const next = end - OVERLAP;
+  keepOnly(peekUrl(track.name));
   load(peekUrl(track.name)).catch(() => {}); // ready before it's needed
   track.timer = setTimeout(async () => {
     if (playing !== track) return;
@@ -80,11 +93,14 @@ function scheduleTrack(track, buffer, at) {
   }, Math.max(0, (next - ctx.currentTime - 1) * 1000));
 }
 
+// On the last feather the table plays its heavy version.
+const currentMood = () => (tension && mood.startsWith('chapter') ? 'lastfeather' : mood);
+
 async function playMood() {
   const ctx = audio();
   if (!ctx || !enabled || !started) return;
-  if (playing?.name === mood) return;
-  const name = mood;
+  const name = currentMood();
+  if (playing?.name === name) return;
   ensureGraph(ctx);
   let buffer;
   try {
@@ -92,7 +108,7 @@ async function playMood() {
   } catch {
     return; // no music rather than a broken game
   }
-  if (name !== mood || !enabled || playing?.name === name) return;
+  if (name !== currentMood() || !enabled || playing?.name === name) return;
   stopPlaying();
   const gain = ctx.createGain();
   gain.gain.value = 1;
@@ -138,7 +154,10 @@ export function setMood(value) {
   playMood();
 }
 
-export const setTension = value => { tension = value; };
+export function setTension(value) {
+  tension = value;
+  playMood();
+}
 
 // Dip under a big moment, then come back.
 export function duckMusic(seconds = 1.6) {

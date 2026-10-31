@@ -83,5 +83,7 @@ export const sounds = {
   good: () => { noise(130, 0.08, 500, 0, 'lowpass'); tone(523, 130, 0.05, 'triangle', 0.02); tone(784, 240, 0.05, 'triangle', 0.12); quack(0.7, 0.05); },
   bad: () => { tone(170, 340, 0.08, 'triangle', 0, 80); noise(120, 0.05, 300, 0, 'lowpass'); quack(1.25, 0.03); },
   win: () => { [523, 659, 784, 1047].forEach((f, n) => tone(f, 300, 0.05, 'triangle', n * 0.12)); },
+  badge: () => { [1047, 1319, 1568].forEach((f, n) => tone(f, 180, 0.03, 'square', n * 0.07)); },
+  fanfare: () => { [[392, 0], [523, 0.12], [659, 0.24], [784, 0.36], [659, 0.54], [1047, 0.66]].forEach(([f, at]) => { tone(f, 260, 0.04, 'square', at); tone(f / 2, 260, 0.04, 'triangle', at); }); },
   lose: () => { [392, 330, 262].forEach((f, n) => tone(f, 380, 0.05, 'triangle', n * 0.2)); },
 };

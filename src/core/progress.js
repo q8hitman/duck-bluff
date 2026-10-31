@@ -62,9 +62,41 @@ export function roundScore(state) {
   return 100 + state.feathers * 30 + unused * 25;
 }
 
+// Everything is known once the chapters are done, even ducks that never showed up.
+export function albumSeen(save) {
+  return new Set(save.endlessOpen ? all.map(c => c.id) : save.seen);
+}
+
+export const BADGES = ['firstWin', 'flawless', 'clutch', 'pure', 'graduate', 'streak5', 'streak10', 'score5000'];
+
+// Badges earned by the save as it stands, plus how the round just went.
+function earned(save, { feathers, hadAbilities, usedAbility }) {
+  const rules = {
+    firstWin: true,
+    flawless: feathers === 3,
+    clutch: feathers === 1,
+    pure: hadAbilities && !usedAbility,
+    graduate: Boolean(save.endlessOpen),
+    streak5: (save.streak ?? 0) >= 5,
+    streak10: (save.streak ?? 0) >= 10,
+    score5000: (save.score ?? 0) >= 5000,
+  };
+  return BADGES.filter(id => rules[id]);
+}
+
+// Records the round in the save and returns the badges that are new.
+export function awardBadges(save, round) {
+  const have = save.badges ?? [];
+  const fresh = earned(save, round).filter(id => !have.includes(id));
+  return { save: { ...save, badges: [...have, ...fresh] }, fresh };
+}
+
 export function onRoundWon(save, { clubIds: played, score = 0 }) {
   const s = { ...save, wins: (save.wins ?? 0) + 1, feathers: ROUND_FEATHERS, score: (save.score ?? 0) + score, recentClub: [...played], chapterClubSeen: [...new Set([...save.chapterClubSeen, ...played])], nextSeed: save.nextSeed + 1 };
-  if (s.chapter === 'endless') return { save: s, newlyUnlocked: [] };
+  if (s.chapter === 'endless') {
+    const streak = (s.streak ?? 0) + 1;
+    return { save: { ...s, streak, bestStreak: Math.max(s.bestStreak ?? 0, streak) }, newlyUnlocked: [] };
+  }
   if (s.roundInChapter < ROUNDS_PER_CHAPTER) return { save: { ...s, roundInChapter: s.roundInChapter + 1 }, newlyUnlocked: [] };
   if (s.resume) return { save: resumeRun(s), newlyUnlocked: [] };
   const next = s.chapter + 1;
@@ -83,7 +115,7 @@ export function factForWin(save, total) {
 }
 
 export function onRunLost(save) {
-  return { ...save, feathers: ROUND_FEATHERS, nextSeed: save.nextSeed + 1 };
+  return { ...save, feathers: ROUND_FEATHERS, nextSeed: save.nextSeed + 1, streak: save.chapter === 'endless' ? 0 : save.streak };
 }
 
 // Saved at once, with a new table next time, so leaving a round can't undo a mistake.

@@ -58,28 +58,24 @@ function bubbleRect(card, side, { w, h }, { gap, above }) {
 // Picks where each speech bubble goes, keeping it off the cards, their numbers, the
 // other bubbles and anything in `blocks`. All values are pixels inside the table.
 // Sides name the seat class: 'top' seats speak downward, 'bottom' seats upward.
-// `first` is the duck in focus: it chooses first and always gets a bubble. The rest
-// report clear: false when no side is free, and those lines wait for a tap.
-export function placeBubbles({ cards, sizes, preferred, blocks, width, height, first = null, gap = 9, above = 20 }) {
+// Each result says clear: false when no side was free.
+export function placeBubbles({ cards, sizes, preferred, blocks, width, height, gap = 9, above = 20 }) {
   const solid = [...cards.map(c => ({ ...c, t: c.t - (above - gap) })), ...blocks];
   const placed = [];
   const result = cards.map((_, i) => ({ side: preferred[i], clear: true }));
-  const turns = cards.map((_, i) => i).filter(i => i !== first);
-  if (first !== null) turns.unshift(first);
-  for (const i of turns) {
+  for (const [i, card] of cards.entries()) {
     if (!sizes[i]) continue;
-    const card = cards[i];
     const order = [preferred[i], ...['top', 'bottom', 'right', 'left'].filter(s => s !== preferred[i])];
     let best = null;
     for (const side of order) {
       const rect = bubbleRect(card, side, sizes[i], { gap, above });
+      const roomy = { l: rect.l - 4, r: rect.r + 4, t: rect.t - 4, b: rect.b + 4 }; // leaves air around it
       const offTable = sizes[i].w * sizes[i].h - hits(rect, { l: 0, r: width, t: 0, b: height });
-      const score = offTable + [...solid, ...placed].reduce((sum, o) => sum + hits(rect, o), 0);
+      const score = offTable + [...solid, ...placed].reduce((sum, o) => sum + hits(roomy, o), 0);
       if (!best || score < best.score) best = { side, rect, score };
     }
-    const clear = best.score === 0;
-    if (clear || i === first) placed.push(best.rect);
-    result[i] = { side: best.side, clear };
+    placed.push(best.rect);
+    result[i] = { side: best.side, clear: best.score === 0 };
   }
   return result;
 }

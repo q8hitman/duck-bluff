@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 
-const TRACKS = ['pixel-menu', 'pixel-mystery', 'pixel-funk', 'groove', 'midnight'];
+const TRACKS = ['morning', 'firstday', 'detective', 'hauntedlab', 'finale', 'khaleeji', 'lastfeather'];
 
 test('the soundtrack ships and is small enough for phones', () => {
   for (const name of TRACKS) {

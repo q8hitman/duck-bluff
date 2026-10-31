@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createProgress, defaultSave, onRoundWon, onRunLost, onFeatherLost, startChapter, resumeRun, forceClubFor, ROUNDS_PER_CHAPTER } from '../src/core/progress.js';
+import { createProgress, defaultSave, onRoundWon, onRunLost, onFeatherLost, startChapter, resumeRun, forceClubFor, ROUNDS_PER_CHAPTER, albumSeen, awardBadges } from '../src/core/progress.js';
 
 const memory = () => { const m = new Map(); return { getItem: k => m.get(k) ?? null, setItem: (k, v) => m.set(k, v) }; };
 
@@ -81,4 +81,29 @@ test('finishing a replayed chapter returns to the real run', () => {
   assert.equal(s.chapter, 3);
   assert.equal(s.roundInChapter, 2);
   assert.equal(s.feathers, 2);
+});
+
+test('finishing the chapters reveals the whole album', () => {
+  const save = { ...defaultSave(), seen: ['abdullah'] };
+  assert.equal(albumSeen(save).has('lucky'), false);
+  assert.equal(albumSeen({ ...save, endlessOpen: true }).has('lucky'), true);
+  assert.equal(albumSeen({ ...save, endlessOpen: true }).has('shadow'), true);
+});
+
+test('endless counts a streak, keeps the best, and a loss resets only the streak', () => {
+  let save = { ...defaultSave(), chapter: 'endless', endlessOpen: true };
+  save = onRoundWon(save, { clubIds: [] }).save;
+  save = onRoundWon(save, { clubIds: [] }).save;
+  assert.equal(save.streak, 2);
+  save = onRunLost(save);
+  assert.equal(save.streak, 0);
+  assert.equal(save.bestStreak, 2);
+});
+
+test('badges are given once and match how the round went', () => {
+  const round = { feathers: 3, hadAbilities: true, usedAbility: false };
+  const first = awardBadges(defaultSave(), round);
+  assert.deepEqual(first.fresh.sort(), ['firstWin', 'flawless', 'pure']);
+  assert.deepEqual(awardBadges(first.save, round).fresh, []);
+  assert.ok(awardBadges(defaultSave(), { feathers: 1, hadAbilities: true, usedAbility: true }).fresh.includes('clutch'));
 });

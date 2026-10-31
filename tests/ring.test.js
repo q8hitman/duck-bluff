@@ -59,7 +59,7 @@ test('a bubble moves off whatever blocks its usual side', () => {
 
 test('bubbles avoid each other and hidden ones stay out of the way', () => {
   const a = { l: 100, r: 200, t: 100, b: 240 };
-  const b = { l: 100, r: 200, t: 320, b: 460 };
+  const b = { l: 100, r: 200, t: 340, b: 480 };
   const size = { w: 128, h: 60 };
   const base = { cards: [a, b], preferred: ['top', 'bottom'], blocks: [], width: 1000, height: 600 };
   const both = placeBubbles({ ...base, sizes: [size, size] });
@@ -68,11 +68,10 @@ test('bubbles avoid each other and hidden ones stay out of the way', () => {
   assert.equal(placeBubbles({ ...base, sizes: [null, size] })[1].side, 'bottom');
 });
 
-test('with no free side a bubble waits, unless its duck is in focus', () => {
+test('a bubble with no free side reports it', () => {
   const card = { l: 10, r: 110, t: 10, b: 150 };
   const wall = { l: 0, r: 1000, t: 0, b: 600 };
   const size = { w: 128, h: 50 };
   assert.equal(placeBubbles({ cards: [card], sizes: [size], preferred: ['top'], blocks: [wall], width: 1000, height: 600 })[0].clear, false);
-  const other = { ...card, l: 300, r: 400 };
-  assert.equal(placeBubbles({ cards: [card, other], sizes: [size, size], preferred: ['top', 'top'], blocks: [], width: 1000, height: 600, first: 1 })[1].clear, true);
+  assert.equal(placeBubbles({ cards: [card], sizes: [size], preferred: ['top'], blocks: [], width: 1000, height: 600 })[0].clear, true);
 });

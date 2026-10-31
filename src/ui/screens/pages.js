@@ -2,7 +2,7 @@
 import { h } from '../motion.js';
 import * as fx from '../fx.js';
 import { CARDS, IMPOSTORS, getCard, impostorArt } from '../../core/cards.js';
-import { startChapter, resumeRun } from '../../core/progress.js';
+import { startChapter, resumeRun, albumSeen, BADGES } from '../../core/progress.js';
 import { t, cardText, cardDesc, impostorText } from '../../i18n/i18n.js';
 
 const topBar = (app, title, to = 'menu') => h('div', { class: 'page-top' },
@@ -75,7 +75,8 @@ export function introScreen(root, app, { ids }) {
 }
 
 export function albumScreen(root, app) {
-  const seen = new Set(app.save.seen);
+  const seen = albumSeen(app.save);
+  const have = app.save.badges ?? [];
   const show = (id, img, name) => {
     const ability = getCard(id)?.ability ? cardText(id).ability : null;
     const back = h('div', { class: 'sheet-back', onclick: e => { if (e.target === back) back.remove(); } },
@@ -94,6 +95,12 @@ export function albumScreen(root, app) {
     h('div', { class: 'album-grid' }, items.map(x => tile(x.id, x.img, x.name))));
   const cards = CARDS.map(c => ({ id: c.id, img: c.portrait, name: cardText(c.id).name, group: c.group }));
   root.append(topBar(app, t('album')),
+    h('section', { class: 'album-group' },
+      h('h3', {}, `🏅 ${t('badges')} (${t('seenCount', { n: have.length, total: BADGES.length })})`),
+      app.save.bestStreak ? h('p', { class: 'best-streak' }, t('bestStreak', { n: app.save.bestStreak })) : null,
+      h('div', { class: 'badge-grid' }, BADGES.map(id => h('div', { class: `badge${have.includes(id) ? ' on' : ''}` },
+        h('strong', {}, t(`badge_${id}`)),
+        h('span', {}, t(`badgeDesc_${id}`)))))),
     group('BSC', cards.filter(c => c.group === 'club')),
     group('🦆', cards.filter(c => c.group === 'guest')),
     group('🎭', IMPOSTORS.map(i => ({ id: i.id, img: impostorArt(i.id), name: impostorText(i.id).name }))));
