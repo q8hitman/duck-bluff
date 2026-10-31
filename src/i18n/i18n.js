@@ -2,6 +2,7 @@
 import ar from './ar.js';
 import en from './en.js';
 import descriptions from './descriptions.js';
+import facts from './facts.js';
 import { makeLayout, boardLabel, opposite } from '../core/board.js';
 import { countedCards } from '../core/refs.js';
 
@@ -12,6 +13,8 @@ export const setLang = l => { lang = LANGS[l] ? l : 'ar'; };
 export const getLang = () => lang;
 export const dir = () => (lang === 'ar' ? 'rtl' : 'ltr');
 export const cardText = id => LANGS[lang].cards[id];
+export const factText = i => facts[lang][i];
+export const factCount = () => facts[lang].length;
 export const cardDesc = id => descriptions[lang][id];
 export const impostorText = id => LANGS[lang].impostors[id];
 
@@ -107,7 +110,7 @@ const EN = {
 const EMOJI = {
   visitor: '👀', sleepy: '😴', newbie: '🎒', attendance: '✍️', late: '🚗', snap: '🤳', homework: '📚',
   breakTime: '☕', hyped: '🎉', plants: '🌱', lost: '🗺️', graduate: '🎓', wifi: '📶', microwave: '⏲️',
-  cameraOff: '🙈', organizer: '🗂️', volatile: '⚠️',
+  cameraOff: '🙈', organizer: '🗂️', volatile: '⚠️', lucky: '🍀',
 };
 const VOICE = {
   ar: {

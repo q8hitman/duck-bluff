@@ -17,6 +17,7 @@ export default {
     ritaj: { name: 'Dr. Ritaj', ability: 'Memory: pick a card to learn if its line is true' },
 
     volatile: { name: 'Risky Duck' },
+    lucky: { name: 'Lucky Duck' },
     lab: { name: 'Lab Duck' },
     guard: { name: 'Guard Duck' },
     echo: { name: 'Echo Duck' },
@@ -100,6 +101,9 @@ export default {
     row: '{n}',
     caught: '{n} of {total} caught',
     expel: 'Expel',
+    luckyFeather: 'The Lucky Duck gave you a feather back! 🍀',
+    facts: 'Science facts',
+    didYouKnow: 'Did you know?',
     blast: 'The experiment blew up! 💥 All feathers lost',
     reactBlast: 'I warned you! 💥',
     scrambleFound: 'Saboteur caught! Duck {n} was scrambled 🌀',

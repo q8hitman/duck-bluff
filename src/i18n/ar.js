@@ -17,6 +17,7 @@ export default {
     ritaj: { name: 'د. رتاج', ability: 'الذاكرة: اختر كرت وتعرف إذا جملته صح' },
 
     volatile: { name: 'البطة الخطرة' },
+    lucky: { name: 'بطة الحظ' },
     lab: { name: 'بطة المختبر' },
     guard: { name: 'الحارسة' },
     echo: { name: 'بطة الصدى' },
@@ -100,6 +101,9 @@ export default {
     row: '{n}',
     caught: 'انكشف {n} من {total}',
     expel: 'اطرد',
+    luckyFeather: 'بطة الحظ رجعت لك ريشة! 🍀',
+    facts: 'معلومات علمية',
+    didYouKnow: 'تدري؟',
     blast: 'انفجرت التجربة! 💥 خسرت كل الريش',
     reactBlast: 'قلت لك لا! 💥',
     scrambleFound: 'انكشف المخرّب! بطة {n} كانت مخربطة 🌀',

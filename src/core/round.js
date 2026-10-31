@@ -142,6 +142,16 @@ export function expel(state, i) {
     }
   }
 
+  // A flipped lucky duck on the table gives back the first feather lost, once.
+  if (featherLost && !slot.evil && slot.realId !== 'volatile' && !s.luckyUsed) {
+    const lucky = s.truth.cards.findIndex((c, j) => c.realId === 'lucky' && s.flipped[j] && !s.expelled[j]);
+    if (lucky >= 0) {
+      s.luckyUsed = true;
+      s.feathers++;
+      events.push({ type: 'luckyFeather', i: lucky, left: s.feathers });
+    }
+  }
+
   const triggers = [];
   if (s.expels === 1) triggers.push('afterFirstExpel');
   if (featherLost) triggers.push('afterFeatherLoss');

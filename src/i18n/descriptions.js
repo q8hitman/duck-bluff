@@ -17,6 +17,7 @@ export default {
     hora: 'تخلط وتقارن. تقول إذا بطتين من نفس الفريق أو لا.',
     ritaj: 'تقول إذا جارتيها صادقتين، أو فيهم وحدة كذابة. الكذابة ممكن تكون متنكرة أو مخربطة.',
 
+    lucky: 'نادرة! تقول إن بطة معينة بريئة. ولو كانت مقلوبة وباقية، أول ريشة تخسرها في الجولة ترجع لك.',
     volatile: 'عندها تجربة خطرة! تقول إذا فيه متنكر جنبها. لو طردتها وهي بريئة، تخسر كل ريشك الثلاث. بس المتنكر ممكن يلبس شكلها عشان يخوفك.',
     lab: 'تقول إذا فيه متنكر جنبها أو لا.',
     guard: 'تحرس اللي قبلها، وتقول إن البطة اللي رقمها قبلها بريئة.',
@@ -75,6 +76,7 @@ export default {
     hora: 'Mixes and compares. Says whether two ducks are on the same team.',
     ritaj: 'Says whether her two neighbors are truthful, or one of them lies. A liar is an impostor or scrambled.',
 
+    lucky: 'Rare! Says a certain duck is innocent. While she is flipped and still here, the first feather you lose this round comes back.',
     volatile: 'Runs a risky experiment! Says whether an impostor sits next to her. Expel her while she is innocent and you lose all 3 feathers. But an impostor may wear her face to scare you.',
     lab: 'Says whether an impostor sits next to her.',
     guard: 'Guards the duck before her and says it is innocent.',

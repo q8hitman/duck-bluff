@@ -19,6 +19,7 @@ export const CHAPTERS = [
 const MAX_ATTEMPTS = 200;
 const RELAX_AFTER = 120;
 const FAIR_TRIALS = 10;
+const LUCKY_CHANCE = 0.25;
 const UNFAIR_AFTER = 800; // last resort so a round always appears
 
 export function unlockedThrough(chapter) {
@@ -28,7 +29,7 @@ export function unlockedThrough(chapter) {
 
 const isFlavor = id => getCard(id).tier === 'flavor';
 // cards an impostor may wear: info cards whose line appears on flip
-const disguisable = c => c.tier !== 'flavor' && c.timing === 'onFlip' && !c.pair;
+const disguisable = c => c.tier !== 'flavor' && c.timing === 'onFlip' && !c.pair && c.id !== 'lucky';
 
 function pickTypes(rng, spec, unlocked, k, withAbdullah) {
   const allowed = spec.types.filter(t => unlocked.includes(t));
@@ -90,7 +91,9 @@ function attempt(rng, spec, unlocked, recentClub, forceClub, relaxed, wantAbdull
   club.push(...takeFrom(rng, clubPool.filter(id => !club.includes(id)), Math.max(0, clubN - club.length), recentClub));
   if (club.length !== clubN && clubN >= club.length) return null;
 
-  const guestPool = CARDS.filter(c => c.group === 'guest' && c.tier !== 'flavor' && have(c.id) && !c.pair).map(c => c.id);
+  // the lucky duck is a rare treat
+  const includeLucky = rng.next() < LUCKY_CHANCE;
+  const guestPool = CARDS.filter(c => c.group === 'guest' && c.tier !== 'flavor' && have(c.id) && !c.pair && (c.id !== 'lucky' || includeLucky)).map(c => c.id);
   const guests = [];
   if (guestN >= 2 && have('twinA') && rng.next() < 0.25) { guests.push('twinA', 'twinB'); guestN -= 2; }
   guests.push(...takeFrom(rng, guestPool, guestN));

@@ -11,7 +11,7 @@ const club = (id, chapter, kind, ability, targets, extra = {}) => ({
 });
 
 // Not in the art sheet yet, so they keep a drawn placeholder.
-const PLACEHOLDER = ['hyped', 'cameraOff', 'volatile'];
+const PLACEHOLDER = ['hyped', 'cameraOff', 'volatile', 'lucky'];
 
 const guest = (id, tier, chapter, kind, extra = {}) => ({
   id, group: 'guest', tier, chapter, kind, timing: 'onFlip',
@@ -43,6 +43,7 @@ export const CARDS = [
   guest('echo', 'weak', 1, 'prevTruthful'),
   guest('queue', 'weak', 1, 'nextIs'),
   guest('volatile', 'medium', 3, 'neighborHasEvil'),
+  guest('lucky', 'medium', 2, 'nameInnocent'),
   guest('witness', 'medium', 2, 'rowHasEvil'),
   guest('corners', 'weak', 2, 'cornerHasEvil'),
   guest('skeptic', 'medium', 2, 'statementFalse'),

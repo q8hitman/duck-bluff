@@ -20,7 +20,8 @@ export function defaultSave() {
     chapterClubSeen: [],
     nextSeed: 1,
     score: 0,
-    settings: { lang: 'ar', reduceMotion: null, sound: true, music: true },
+    wins: 0,
+    settings: { lang: 'ar', reduceMotion: null, sound: true, music: true, facts: true },
   };
 }
 
@@ -62,7 +63,7 @@ export function roundScore(state) {
 }
 
 export function onRoundWon(save, { clubIds: played, score = 0 }) {
-  const s = { ...save, feathers: ROUND_FEATHERS, score: (save.score ?? 0) + score, recentClub: [...played], chapterClubSeen: [...new Set([...save.chapterClubSeen, ...played])], nextSeed: save.nextSeed + 1 };
+  const s = { ...save, wins: (save.wins ?? 0) + 1, feathers: ROUND_FEATHERS, score: (save.score ?? 0) + score, recentClub: [...played], chapterClubSeen: [...new Set([...save.chapterClubSeen, ...played])], nextSeed: save.nextSeed + 1 };
   if (s.chapter === 'endless') return { save: s, newlyUnlocked: [] };
   if (s.roundInChapter < ROUNDS_PER_CHAPTER) return { save: { ...s, roundInChapter: s.roundInChapter + 1 }, newlyUnlocked: [] };
   if (s.resume) return { save: resumeRun(s), newlyUnlocked: [] };
@@ -73,6 +74,12 @@ export function onRoundWon(save, { clubIds: played, score = 0 }) {
     save: { ...s, chapter: next, roundInChapter: 1, chapterClubSeen: [], unlocked: [...s.unlocked, ...newlyUnlocked] },
     newlyUnlocked,
   };
+}
+
+// A fact shows on every other win, cycling through all of them, or never if turned off.
+export function factForWin(save, total) {
+  if (save.settings.facts === false || !save.wins || save.wins % 2) return null;
+  return (save.wins / 2 - 1) % total;
 }
 
 export function onRunLost(save) {

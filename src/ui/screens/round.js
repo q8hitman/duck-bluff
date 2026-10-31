@@ -9,8 +9,8 @@ import { referredCards } from '../../core/refs.js';
 import { getCard, impostorArt } from '../../core/cards.js';
 import { generateRound, unlockedThrough } from '../../core/generator.js';
 import { createRound, flip, mark, expel, useAbility, setBusy } from '../../core/round.js';
-import { forceClubFor, onRoundWon, onRunLost, onFeatherLost, roundScore, ROUNDS_PER_CHAPTER } from '../../core/progress.js';
-import { t, getLang, cardText, cardDesc, impostorText, statementText } from '../../i18n/i18n.js';
+import { forceClubFor, onRoundWon, onRunLost, onFeatherLost, roundScore, factForWin, ROUNDS_PER_CHAPTER } from '../../core/progress.js';
+import { t, getLang, factText, factCount, cardText, cardDesc, impostorText, statementText } from '../../i18n/i18n.js';
 
 export function roundScreen(root, app) {
   if (app.save.feathers <= 0) app.save = onRunLost(app.save);
@@ -374,6 +374,13 @@ export function roundScreen(root, app) {
       }
       if (e.type === 'answer') { toast(`${cardText(shown[e.i]).name}: ${statementText(e.statement, null, { self: e.i, layout })}`); setFocus(e.i, e.statement, true); }
       if (e.type === 'shield') toast(t(e.works ? 'shieldWorked' : 'shieldFailed'), !e.works);
+      if (e.type === 'luckyFeather') {
+        toast(t('luckyFeather'));
+        app.save = { ...app.save, feathers: e.left };
+        app.persist();
+        setTension(e.left === 1);
+        sounds.good();
+      }
       if (e.type === 'scrambleFound') {
         views[e.i].showTag('🌀', true);
         toast(t('scrambleFound', { n: boardLabel(e.i) }));
@@ -432,12 +439,15 @@ export function roundScreen(root, app) {
       if (newlyUnlocked.length) app.go('intro', { ids: newlyUnlocked });
       else app.go('round');
     };
+    const factIndex = won ? factForWin(app.save, factCount()) : null;
+    const factLine = factIndex === null ? null : h('p', { class: 'result-fact' }, h('strong', {}, `💡 ${t('didYouKnow')} `), factText(factIndex));
     const resultEl = h('div', { class: 'sheet-back' },
       h('div', { class: 'sheet result', role: 'dialog', 'aria-modal': 'true' },
         h('img', { class: 'result-duck', src: won ? getCard(clubIds[0] ?? 'bassam').portrait : impostorArt(impostorTypes[0]), alt: '' }),
         h('h2', {}, won ? t('won') : t('lost')),
         won ? h('p', { class: 'result-score' }, t('scoreLine', { gained, total: app.save.score })) : null,
         won ? h('div', { class: 'result-feathers', 'aria-label': t('feathers') }, [0, 1, 2].map(n => h('span', { class: n < state.feathers ? '' : 'gone' }, '🪶'))) : null,
+        factLine,
         h('div', { class: 'sheet-actions' },
           h('button', { class: 'btn primary', onclick: go }, won ? t('nextRound') : t('retry')),
           h('button', { class: 'btn', onclick: () => { resultEl.remove(); app.go('menu'); } }, t('toMenu')))));

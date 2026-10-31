@@ -118,5 +118,7 @@ export function settingsScreen(root, app) {
     h('div', { class: 'setting' }, h('strong', {}, t('sound')),
       segmented([[true, t('on')], [false, t('off')]], s.sound, sound => change({ sound }))),
     h('div', { class: 'setting' }, h('strong', {}, t('music')),
-      segmented([[true, t('on')], [false, t('off')]], s.music, music => change({ music }))));
+      segmented([[true, t('on')], [false, t('off')]], s.music, music => change({ music }))),
+    h('div', { class: 'setting' }, h('strong', {}, t('facts')),
+      segmented([[true, t('on')], [false, t('off')]], s.facts, facts => change({ facts }))));
 }
