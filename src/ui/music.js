@@ -15,6 +15,7 @@ const TRACKS = {
 let volume = 0.5; // the player's choice, 0 to 1
 const OVERLAP = 3; // seconds the end of a track overlaps the next start
 const FADE = 1.2;
+const RETRY_AFTER = 5000;
 
 let enabled = true;
 let started = false;
@@ -23,12 +24,16 @@ let mood = 'menu';
 let tension = false;
 let playing = null; // { name, gain, sources, timer }
 let beatTimer = null;
+let retryTimer = null;
 const buffers = {};
 const turn = Object.fromEntries(Object.keys(TRACKS).map(name => [name, 0]));
 
 async function load(url) {
   const ctx = audio();
-  buffers[url] ??= fetch(url).then(r => r.arrayBuffer()).then(data => ctx.decodeAudioData(data));
+  buffers[url] ??= fetch(url).then(r => r.arrayBuffer()).then(data => ctx.decodeAudioData(data)).catch(error => {
+    delete buffers[url]; // a bad connection must not silence this track for good
+    throw error;
+  });
   return buffers[url];
 }
 
@@ -106,6 +111,8 @@ async function playMood() {
   try {
     buffer = await load(nextUrl(name));
   } catch {
+    clearTimeout(retryTimer);
+    retryTimer = setTimeout(playMood, RETRY_AFTER);
     return; // no music rather than a broken game
   }
   if (name !== currentMood() || !enabled || playing?.name === name) return;

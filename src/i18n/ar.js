@@ -83,6 +83,7 @@ export default {
     sound: 'الأصوات',
     music: 'الموسيقى',
     musicVolume: 'صوت الموسيقى',
+    tapForMusic: '🔊 اضغط في أي مكان لتشغيل الموسيقى',
     on: 'شغّال',
     off: 'طافي',
     auto: 'حسب الجهاز',

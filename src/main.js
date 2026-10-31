@@ -7,6 +7,7 @@ import { startMusic, setMusic, setMood, setMusicVolume } from './ui/music.js';
 import { buildWorld } from './ui/world.js';
 import { roundScreen } from './ui/screens/round.js';
 import { retryBrokenImages } from './ui/image-retry.js';
+import { waitForAudio } from './ui/audio-unlock.js';
 import { menuScreen, chaptersScreen, introScreen, albumScreen, settingsScreen } from './ui/screens/pages.js';
 
 const SCREENS = { menu: menuScreen, chapters: chaptersScreen, round: roundScreen, intro: introScreen, album: albumScreen, settings: settingsScreen };
@@ -17,6 +18,7 @@ let current = null;
 let cleanup = null;
 let token = 0;
 let audioUnlocked = false;
+const HINT_DELAY = 800; // a browser that allows sound right away never shows the hint
 
 const app = {
   save: progress.load(),
@@ -56,12 +58,6 @@ if (app.save.salt === undefined) {
   app.persist();
 }
 
-// Browsers only allow sound after the first tap.
-addEventListener('pointerdown', () => {
-  audioUnlocked = true;
-  if (app.save.settings.music) startMusic();
-}, { once: true });
-
 document.addEventListener('visibilitychange', () => {
   if (!audioUnlocked) return;
   if (document.hidden) audio()?.suspend();
@@ -71,6 +67,17 @@ document.addEventListener('visibilitychange', () => {
 app.applySettings();
 buildWorld(document.getElementById('world'));
 app.go('menu');
+
+// Browsers decide when sound may start, usually at the first tap: until then the menu says so.
+const musicHint = h('div', { class: 'music-hint', hidden: '' }, t('tapForMusic'));
+document.body.append(musicHint);
+const hintTimer = setTimeout(() => { if (app.save.settings.music && audio()) musicHint.hidden = false; }, HINT_DELAY);
+waitForAudio(window, audio, () => {
+  audioUnlocked = true;
+  clearTimeout(hintTimer);
+  musicHint.remove();
+  if (app.save.settings.music) startMusic();
+});
 
 retryBrokenImages();
 

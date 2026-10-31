@@ -98,3 +98,7 @@ h1 { letter-spacing: .3px; }
 body.at-table #toasts { top: auto; bottom: calc(14px + env(safe-area-inset-bottom)); }
 
 .narrow { max-width: 640px; margin-inline: auto; }
+
+.music-hint { position: fixed; inset-block-end: 16px; inset-inline-start: 50%; transform: translateX(-50%); z-index: 20; max-width: calc(100vw - 32px); padding: 8px 16px; border: 2.5px solid var(--outline); border-radius: 999px; box-shadow: 2px 3px 0 var(--outline); background: var(--gold); color: var(--outline); font-family: var(--display); font-size: 16px; text-align: center; pointer-events: none; }
+[dir="rtl"] .music-hint { transform: translateX(50%); }
+.music-hint[hidden] { display: none; }

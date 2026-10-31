@@ -83,6 +83,7 @@ export default {
     sound: 'Sound effects',
     music: 'Music',
     musicVolume: 'Music volume',
+    tapForMusic: '🔊 Tap anywhere to start the music',
     on: 'On',
     off: 'Off',
     auto: 'Device default',
