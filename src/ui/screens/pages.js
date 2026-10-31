@@ -20,7 +20,7 @@ export function menuScreen(root, app) {
         h('button', { class: 'btn primary', style: 'width:100%', onclick: () => { back.remove(); then?.(); } }, then ? t('play') : t('close'))));
     document.body.append(back);
   };
-  root.append(h('div', { class: 'menu' },
+  root.append(h('img', { class: 'menu-logo', src: 'assets/ui/logo-full.webp', alt: 'Biological Sciences Club, Kuwait University' }), h('div', { class: 'menu' },
     h('div', { class: 'menu-fan', 'aria-hidden': 'true' }, ['camel', 'rawan', 'abdullah', 'loujain', 'ali'].map((id, n) => h('div', { class: 'fan-slot', style: `--n:${n - 2}` },
       h('div', { class: 'fan-card' }, h('img', { class: 'card-art', src: getCard(id).portrait, alt: '' }), h('img', { class: 'card-frame', src: frameOf(id), alt: '' }))))),
     h('h1', {}, t('appName')),

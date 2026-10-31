@@ -8,6 +8,7 @@
   text-align: center;
 }
 
+.menu-logo { position: absolute; top: 12px; left: 14px; width: clamp(74px, 13vw, 130px); height: auto; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .7)); z-index: 2; }
 .menu-fan { position: relative; width: min(92vw, 400px); height: min(50vw, 190px); margin-bottom: 6px; }
 .fan-slot {
   position: absolute;

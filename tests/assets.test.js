@@ -12,7 +12,7 @@ test('every card portrait and frame exists', () => {
 
 test('impostor art, frames and table exist', () => {
   for (const i of IMPOSTORS) assert.ok(existsSync(impostorArt(i.id)), i.id);
-  for (const f of ['frame-impostor', 'card-back', 'table']) assert.ok(existsSync(`assets/ui/${f}.webp`), f);
+  for (const f of ['frame-impostor', 'card-back', 'table', 'logo']) assert.ok(existsSync(`assets/ui/${f}.webp`), f);
 });
 
 test('guests use the new art except the two not drawn yet', () => {

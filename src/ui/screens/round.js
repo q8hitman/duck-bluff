@@ -39,7 +39,7 @@ export function roundScreen(root, app) {
   const views = shown.map((id, i) => createCardView(i, id, onCardTap));
 
   const sizeClass = n <= 6 ? 0 : n <= 8 ? 1 : n <= 10 ? 2 : 3;
-  const caughtEl = h('div', { class: 'table-caught' });
+  const caughtEl = h('div', { class: 'table-caught', role: 'img' });
   const centerLine = h('div', { class: 'center-line' });
   const bubbles = [];
 
@@ -65,7 +65,9 @@ export function roundScreen(root, app) {
   const aimButton = h('button', { class: 'aim-fab', onclick: () => setAiming(!aiming) }, h('span', { class: 'aim-icon' }, '🦆💨'), aimLabel);
 
   const tableEl = h('div', { class: `table size-${sizeClass}`, onclick: e => { if (e.target === tableEl) setFocus(null); } },
-    h('div', { class: 'table-center' }, h('img', { src: 'assets/ui/table-center.svg', alt: '' }), caughtEl, centerLine, detailsBtn),
+    h('div', { class: 'table-center' },
+      h('div', { class: 'dish' }, h('i', { class: 'dish-ring' }), h('img', { class: 'dish-logo', src: 'assets/ui/logo.webp', alt: 'BSC' }), caughtEl),
+      h('div', { class: 'center-note' }, centerLine, detailsBtn)),
     shown.map((_, i) => seat(i)),
     aimButton);
 
@@ -124,7 +126,15 @@ export function roundScreen(root, app) {
     }));
     renderPickBar();
     renderLog();
-    caughtEl.textContent = t('caught', { n: state.correctExpels, total: impostorTypes.length });
+    caughtEl.setAttribute('aria-label', t('caught', { n: state.correctExpels, total: impostorTypes.length }));
+    if (caughtEl.children.length !== impostorTypes.length) {
+      caughtEl.replaceChildren(...impostorTypes.map(() => h('span', { class: 'pip' }, '🎭')));
+    }
+    [...caughtEl.children].forEach((pip, n) => {
+      const was = pip.classList.contains('caught');
+      pip.classList.toggle('caught', n < state.correctExpels);
+      if (!was && n < state.correctExpels) fx.pop(pip);
+    });
     bubbles.forEach((bubble, i) => {
       const show = state.flipped[i] && !state.expelled[i];
       bubble.hidden = !show;
