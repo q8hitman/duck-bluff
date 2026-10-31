@@ -6,14 +6,11 @@ import { cardText } from '../i18n/i18n.js';
 
 const MARK_ICON = { innocent: '✅', suspect: '❓', evil: '❌' };
 
-// On the small name plate "duck" goes without saying.
-const plateName = name => name.replace(/^(البطة|بطة) /, '').replace(/ Duck$/, '');
-
 export function createCardView(i, shownId, onTap) {
   const card = getCard(shownId);
   const portrait = h('img', { class: 'card-art', src: card.portrait, alt: '', draggable: 'false' });
   const frame = h('img', { class: 'card-frame', src: frameOf(shownId), alt: '', draggable: 'false' });
-  const nameEl = h('div', { class: 'card-name' }, h('span', {}, plateName(cardText(shownId).name)));
+  const nameEl = h('div', { class: 'card-name' }, h('span', {}, cardText(shownId).name));
   const mark = h('span', { class: 'card-mark' });
   const tag = h('span', { class: 'card-tag', hidden: 'hidden' });
   const face = h('div', { class: 'card-side card-face' }, portrait, frame, nameEl, tag,

@@ -137,7 +137,7 @@ body.aiming .dish { border-color: #c8391c; }
 .card.ref .card-back { border-color: #ffd75e; box-shadow: 0 0 14px 4px rgba(255, 190, 60, .85); }
 .card.ref .card-num { background: #ffc93c; border-color: #fff4cf; color: #17100a; scale: 1.18; }
 .card.selected .card-num { background: #fff; border-color: #fff; color: #17100a; scale: 1.12; }
-.table.focusing .seat:has(.card:not(.ref):not(.selected)) .card-inner { filter: saturate(.55) brightness(.72); transition: filter 160ms ease-out, transform var(--flip) cubic-bezier(.3, .9, .4, 1); }
+.table.focusing .seat:has(.card:not(.ref):not(.selected)) .card-side { filter: saturate(.55) brightness(.72); transition: filter 160ms ease-out; }
 
 .details-btn { margin-top: 6px; min-height: 32px; padding: 3px 10px; font-size: 13px; }
 .details-btn[hidden] { display: none; }
