@@ -4,8 +4,9 @@ import { audio } from './sound.js';
 
 const music = name => `assets/music/${name}.mp3`;
 const TRACKS = {
-  menu: ['pixel-menu', 'menu'].map(music),
-  table: ['pixel-mystery', 'groove', 'midnight', 'pixel-funk', 'table'].map(music),
+  menu: ['home', 'sneak'].map(music),
+  table: ['lab-funk', 'sneak', 'midnight'].map(music),
+  chase: ['chase'].map(music), // the table on your last feather
 };
 const VOLUME = 0.5;
 const OVERLAP = 3; // seconds the end of a track overlaps the next start
@@ -19,7 +20,7 @@ let tension = false;
 let playing = null; // { name, gain, sources, timer }
 let beatTimer = null;
 const buffers = {};
-const turn = { menu: 0, table: 0 };
+const turn = { menu: 0, table: 0, chase: 0 };
 
 async function load(url) {
   const ctx = audio();
@@ -80,11 +81,13 @@ function scheduleTrack(track, buffer, at) {
   }, Math.max(0, (next - ctx.currentTime - 1) * 1000));
 }
 
+const currentMood = () => (tension && mood === 'table' ? 'chase' : mood);
+
 async function playMood() {
   const ctx = audio();
   if (!ctx || !enabled || !started) return;
-  if (playing?.name === mood) return;
-  const name = mood;
+  const name = currentMood();
+  if (playing?.name === name) return;
   ensureGraph(ctx);
   let buffer;
   try {
@@ -92,7 +95,7 @@ async function playMood() {
   } catch {
     return; // no music rather than a broken game
   }
-  if (name !== mood || !enabled || playing?.name === name) return;
+  if (name !== currentMood() || !enabled || playing?.name === name) return;
   stopPlaying();
   const gain = ctx.createGain();
   gain.gain.value = 1;
@@ -138,7 +141,10 @@ export function setMood(value) {
   playMood();
 }
 
-export const setTension = value => { tension = value; };
+export function setTension(value) {
+  tension = value;
+  playMood();
+}
 
 // Dip under a big moment, then come back.
 export function duckMusic(seconds = 1.6) {
