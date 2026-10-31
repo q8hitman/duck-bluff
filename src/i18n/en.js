@@ -18,7 +18,7 @@ export default {
     kiraz: { name: 'Keraz', ability: 'Eureka: once 3 other cards are flipped, she names 2 ducks with an impostor between them' },
     hamada: { name: 'Hamada', ability: 'Confession Dose: once 3 other cards are flipped, pick 2 ducks for him to talk to. An impostor among them confesses; if both are impostors, only one does' },
     hora: { name: 'Hora', ability: 'Reaction: pick 3 cards to learn if any is an impostor' },
-    ritaj: { name: 'Dr. Ritaj', ability: 'Memory: pick a card to learn if its line is true' },
+    ritaj: { name: 'Ritaj', ability: 'Memory: pick a card to learn if its line is true' },
 
     volatile: { name: 'Risky Duck' },
     lucky: { name: 'Lucky Duck' },

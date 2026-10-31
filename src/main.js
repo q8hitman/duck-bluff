@@ -6,6 +6,7 @@ import { setSound, audio } from './ui/sound.js';
 import { startMusic, setMusic, setMood, setMusicVolume } from './ui/music.js';
 import { buildWorld } from './ui/world.js';
 import { roundScreen } from './ui/screens/round.js';
+import { retryBrokenImages } from './ui/image-retry.js';
 import { menuScreen, chaptersScreen, introScreen, albumScreen, settingsScreen } from './ui/screens/pages.js';
 
 const SCREENS = { menu: menuScreen, chapters: chaptersScreen, round: roundScreen, intro: introScreen, album: albumScreen, settings: settingsScreen };
@@ -70,6 +71,8 @@ document.addEventListener('visibilitychange', () => {
 app.applySettings();
 buildWorld(document.getElementById('world'));
 app.go('menu');
+
+retryBrokenImages();
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => { /* still playable online */ });
