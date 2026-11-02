@@ -37,7 +37,8 @@ export function menuScreen(root, app) {
       h('button', { class: 'btn', onclick: () => app.go('chapters') }, t('chapters')),
       h('button', { class: 'btn', onclick: () => app.go('album') }, t('album')),
       h('button', { class: 'btn', onclick: () => howTo() }, t('howTo')),
-      h('button', { class: 'btn', onclick: () => app.go('settings') }, t('settings')))));
+      h('button', { class: 'btn', onclick: () => app.go('settings') }, t('settings'))),
+    h('p', { class: 'menu-credit' }, t('credit'))));
   fx.menuIn(root);
 }
 

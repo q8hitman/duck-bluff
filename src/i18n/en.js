@@ -72,6 +72,7 @@ export default {
   ui: {
     appName: 'BSC Ducks: Who\u2019s the Impostor?',
     tagline: 'Biological Sciences Club — Kuwait University',
+    credit: 'Made by Abdullah Alshuwaie & Ritaj Alessa',
     play: 'Play',
     continue: 'Continue',
     chapters: 'Chapters',
